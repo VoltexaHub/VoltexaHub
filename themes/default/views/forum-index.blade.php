@@ -33,7 +33,7 @@
                                         {{ $forum->lastPost->thread->title }}
                                     </a>
                                     <div class="text-xs">
-                                        by {{ $forum->lastPost->author?->name }} · {{ $forum->last_post_at?->diffForHumans() }}
+                                        by @if($forum->lastPost->author)<a href="{{ route('users.show', $forum->lastPost->author) }}" class="hover:text-indigo-600">{{ $forum->lastPost->author->name }}</a>@else [deleted] @endif · {{ $forum->last_post_at?->diffForHumans() }}
                                     </div>
                                 @else
                                     <span class="text-gray-400">No posts yet</span>

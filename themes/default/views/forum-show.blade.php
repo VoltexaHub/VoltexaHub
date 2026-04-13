@@ -36,7 +36,7 @@
                                class="font-medium text-indigo-600 hover:underline truncate">{{ $thread->title }}</a>
                         </div>
                         <div class="text-xs text-gray-500">
-                            by {{ $thread->author?->name }} · {{ $thread->created_at->diffForHumans() }}
+                            by @if($thread->author)<a href="{{ route('users.show', $thread->author) }}" class="hover:text-indigo-600">{{ $thread->author->name }}</a>@else [deleted] @endif · {{ $thread->created_at->diffForHumans() }}
                         </div>
                     </div>
                     <div class="hidden sm:block text-sm text-gray-500 w-24 text-center">
@@ -45,7 +45,7 @@
                     </div>
                     <div class="hidden md:block text-sm text-gray-500 w-48 truncate">
                         @if($thread->lastPost)
-                            <div class="truncate">by {{ $thread->lastPost->author?->name }}</div>
+                            <div class="truncate">by @if($thread->lastPost->author)<a href="{{ route('users.show', $thread->lastPost->author) }}" class="hover:text-indigo-600">{{ $thread->lastPost->author->name }}</a>@else [deleted] @endif</div>
                             <div class="text-xs">{{ $thread->last_post_at?->diffForHumans() }}</div>
                         @endif
                     </div>

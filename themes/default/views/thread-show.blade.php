@@ -20,8 +20,14 @@
             <article class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" id="post-{{ $post->id }}">
                 <header class="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between text-sm">
                     <div class="flex items-center gap-2">
-                        <img src="{{ $post->author?->avatar_url }}" alt="" class="w-7 h-7 rounded-full" />
-                        <span class="font-medium text-gray-800">{{ $post->author?->name }}</span>
+                        @if($post->author)
+                            <a href="{{ route('users.show', $post->author) }}" class="flex items-center gap-2 hover:opacity-80">
+                                <img src="{{ $post->author->avatar_url }}" alt="" class="w-7 h-7 rounded-full" />
+                                <span class="font-medium text-gray-800 hover:text-indigo-600">{{ $post->author->name }}</span>
+                            </a>
+                        @else
+                            <span class="text-gray-500">[deleted]</span>
+                        @endif
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="text-gray-500">{{ $post->created_at->format('M j, Y g:i A') }}</span>
