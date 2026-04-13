@@ -1,58 +1,128 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# VoltexaHub
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A modern, open-source forum engine built for a great theming and plugin developer experience — an alternative to MyBB/phpBB with responsive, mobile-first defaults and a small, coherent Blade-based theme surface.
 
-## About Laravel
+**Status:** early development. v0.1 foundation shipped.
+**License:** AGPL-3.0-or-later (see [LICENSE](LICENSE)).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Backend:** PHP 8.4, Laravel 13
+- **Admin UI:** Inertia + Vue 3
+- **Public UI:** Blade themes (Tailwind + Typography)
+- **Data:** Postgres 16, Redis 7
+- **Frontend build:** Vite
+- **Markdown:** league/commonmark (GFM) + EasyMDE client editor
+- **Deploy:** Docker Compose
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Quickstart
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Requires Docker Desktop.
 
 ```bash
-composer require laravel/boost --dev
+git clone https://github.com/VoltexaHub/VoltexaHub.git
+cd VoltexaHub
 
-php artisan boost:install
+docker compose up -d --build
+docker compose exec app composer install
+docker compose exec app php artisan migrate:fresh --seed --force
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Open http://localhost:8080.
+
+**Seeded admin account:**
+- Email: `admin@voltexahub.test`
+- Password: `password`
+
+The admin panel is at `/admin`. Vite HMR runs at http://localhost:5173.
+
+## Project layout
+
+```
+app/                    # Laravel application
+  Http/Controllers/     # Public + Admin controllers
+  Models/               # Category, Forum, Thread, Post, User
+  Services/             # ThemeManager, PluginManager, HookManager, Markdown
+resources/js/Pages/     # Inertia/Vue pages (admin + auth)
+themes/                 # Blade themes
+  default/
+    theme.json
+    views/              # layout, forum-index, forum-show, thread-show, thread-create, post-edit
+plugins/                # Drop-in plugins
+  welcome-banner/
+    plugin.json
+    plugin.php          # hook registrations
+    views/              # Blade views under `plugin.<slug>::` namespace
+    migrations/         # (optional) auto-loaded
+    routes.php          # (optional) auto-loaded under web middleware
+docker-compose.yml
+```
+
+## Authoring a theme
+
+Themes are just a folder of Blade files. Copy `themes/default` to `themes/<slug>`, edit `theme.json`, and point `VOLTEXAHUB_THEME=<slug>` in your `.env`.
+
+Required views:
+- `layout.blade.php` — the shell (header, nav, `@yield('content')`, hook slots)
+- `forum-index.blade.php`
+- `forum-show.blade.php`
+- `thread-show.blade.php`
+- `thread-create.blade.php`
+- `post-edit.blade.php`
+
+Exposed hook slots in the default layout: `head`, `before_content`, `after_content`. Invoke with `@hook('name')`.
+
+## Authoring a plugin
+
+Create `plugins/<slug>/plugin.json`:
+
+```json
+{
+    "slug": "my-plugin",
+    "name": "My Plugin",
+    "version": "1.0.0",
+    "description": "What it does",
+    "author": "You"
+}
+```
+
+Add a `plugin.php` bootstrap file. Three variables are in scope: `$app`, `$hooks`, `$plugin` (manifest + metadata).
+
+```php
+<?php
+$hooks->listen('before_content', function () use ($plugin) {
+    return view('plugin.'.$plugin['slug'].'::banner')->render();
+});
+```
+
+Optional files that auto-load when the plugin is enabled:
+- `views/` → registered at `plugin.<slug>::` view namespace
+- `migrations/` → picked up by `php artisan migrate`
+- `routes.php` → registered under the `web` middleware group
+
+Enable/disable from **Admin → Plugins**. State is persisted to `storage/app/plugins.json`.
+
+See `plugins/welcome-banner/` for a minimal working example.
+
+## Development
+
+```bash
+docker compose exec app php artisan test        # PHPUnit
+docker compose exec node npm run build          # Production asset build
+docker compose exec app php artisan migrate     # Apply migrations
+docker compose logs -f app                      # Tail Laravel logs
+```
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+See [CONTRIBUTING.md](CONTRIBUTING.md). Solo for now; contributions welcome as the project matures.
 
-## Code of Conduct
+## Roadmap
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+**v0.1 (foundation — shipped):** auth, forums/categories/threads/posts, markdown editor, default responsive theme, theme + plugin loaders, admin panel, Docker deploy.
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**v0.2 (planned):** WebSocket live replies (Reverb), WYSIWYG, SSO/OAuth, moderation queue, private messages, advanced search, user profile pages.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+AGPL-3.0-or-later. See [LICENSE](LICENSE).
