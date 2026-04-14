@@ -12,6 +12,7 @@ const nav = [
     { label: 'Threads', route: 'admin.threads.index' },
     { label: 'Users', route: 'admin.users.index' },
     { label: 'Plugins', route: 'admin.plugins.index' },
+    { label: 'Settings', route: 'admin.settings.index' },
 ];
 
 const isActive = (name) => page.url.startsWith('/admin') && route().current(name.replace('.index', '.*'));

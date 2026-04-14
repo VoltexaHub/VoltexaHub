@@ -44,6 +44,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('plugins', [Admin\PluginController::class, 'index'])->name('plugins.index');
     Route::post('plugins/{slug}/enable', [Admin\PluginController::class, 'enable'])->name('plugins.enable');
     Route::post('plugins/{slug}/disable', [Admin\PluginController::class, 'disable'])->name('plugins.disable');
+
+    Route::get('settings', [Admin\SettingController::class, 'index'])->name('settings.index');
+    Route::put('settings', [Admin\SettingController::class, 'update'])->name('settings.update');
+    Route::delete('settings/oauth-secret', [Admin\SettingController::class, 'clearSecret'])->name('settings.oauth.clear-secret');
 });
 
 require __DIR__.'/auth.php';
