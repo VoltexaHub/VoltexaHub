@@ -40,6 +40,17 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit');
     }
 
+    public function updateSignature(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'signature' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $request->user()->update(['signature' => $data['signature'] ?: null]);
+
+        return Redirect::route('profile.edit')->with('flash.success', 'Signature saved.');
+    }
+
     /**
      * Delete the user's account.
      */

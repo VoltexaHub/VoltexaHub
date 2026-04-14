@@ -145,6 +145,11 @@
                 </header>
                 <div class="pl-[3.25rem] vx-prose">
                     {!! $post->body_html !!}
+                    @if($post->author?->signature_html)
+                        <div class="mt-5 pt-3 border-t vx-hairline text-[0.85rem]" style="color:var(--text-muted)">
+                            {!! $post->author->signature_html !!}
+                        </div>
+                    @endif
                 </div>
                 <div class="pl-[3.25rem]">
                     @include('theme::partials.reactions', ['post' => $post])

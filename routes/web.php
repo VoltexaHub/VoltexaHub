@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::patch('/profile/signature', [ProfileController::class, 'updateSignature'])->name('profile.signature.update');
 
     Route::post('/profile/avatar', [AvatarController::class, 'update'])->middleware('throttle:avatar.update')->name('profile.avatar.update');
     Route::delete('/profile/avatar', [AvatarController::class, 'destroy'])->name('profile.avatar.destroy');

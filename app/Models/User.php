@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'is_admin', 'email_verified_at', 'oauth_provider', 'oauth_provider_id', 'oauth_avatar', 'avatar_path', 'notify_reply_email', 'notify_reply_app', 'notify_pm_email', 'notify_pm_app'])]
+#[Fillable(['name', 'email', 'password', 'is_admin', 'email_verified_at', 'oauth_provider', 'oauth_provider_id', 'oauth_avatar', 'avatar_path', 'signature', 'notify_reply_email', 'notify_reply_app', 'notify_pm_email', 'notify_pm_app'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -27,6 +27,15 @@ class User extends Authenticatable
             'notify_pm_email' => 'boolean',
             'notify_pm_app' => 'boolean',
         ];
+    }
+
+    protected function signatureHtml(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->signature
+                ? app(\App\Services\Markdown::class)->toHtml($this->signature)
+                : null,
+        );
     }
 
     protected function avatarUrl(): Attribute
