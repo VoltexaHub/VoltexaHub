@@ -3,7 +3,7 @@
 @section('title', $thread->title.' · '.config('app.name'))
 
 @push('scripts')
-    @vite('resources/js/markdown-editor.js')
+    @vite(['resources/js/markdown-editor.js', 'resources/js/thread-live.js'])
 @endpush
 
 @section('content')
@@ -15,7 +15,7 @@
 
     <h1 class="text-2xl font-semibold text-gray-900 mb-4">{{ $thread->title }}</h1>
 
-    <div class="space-y-4">
+    <div class="space-y-4" data-thread-posts data-thread-id="{{ $thread->id }}">
         @foreach($posts as $post)
             <article class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" id="post-{{ $post->id }}">
                 <header class="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between text-sm">

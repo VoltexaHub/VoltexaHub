@@ -13,7 +13,12 @@ export default defineConfig({
     },
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/markdown-editor.js'],
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.js',
+                'resources/js/markdown-editor.js',
+                'resources/js/thread-live.js',
+            ],
             refresh: [
                 'app/Http/**',
                 'resources/views/**',

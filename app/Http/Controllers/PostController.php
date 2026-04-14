@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PostCreated;
 use App\Models\Forum;
 use App\Models\Thread;
 use Illuminate\Http\RedirectResponse;
@@ -34,6 +35,8 @@ class PostController extends Controller
             'last_post_id' => $post->id,
             'last_post_at' => $post->created_at,
         ]);
+
+        broadcast(new PostCreated($post))->toOthers();
 
         return redirect()->route('threads.show', [$forum->slug, $thread->slug]);
     }

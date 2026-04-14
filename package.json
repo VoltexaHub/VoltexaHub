@@ -22,6 +22,8 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
-        "easymde": "^2.20.0"
+        "easymde": "^2.20.0",
+        "laravel-echo": "^2.3.4",
+        "pusher-js": "^8.5.0"
     }
 }
