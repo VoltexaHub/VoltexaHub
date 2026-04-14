@@ -10,6 +10,7 @@ const form = useForm({
     notify_reply_app:   !!user.value.notify_reply_app,
     notify_pm_email:    !!user.value.notify_pm_email,
     notify_pm_app:      !!user.value.notify_pm_app,
+    digest_frequency:   user.value.digest_frequency || 'off',
 });
 
 const save = () => form.patch(route('profile.notifications.update'), { preserveScroll: true });
@@ -49,6 +50,17 @@ const rows = [
                         </div>
                     </template>
                 </div>
+            </div>
+
+            <div class="pt-4 border-t border-gray-200">
+                <label class="block text-sm">
+                    <span class="font-medium text-gray-900">Digest email</span>
+                    <p class="text-xs text-gray-500 mt-0.5 mb-2">Receive a single summary email on a schedule instead of (or in addition to) per-event email.</p>
+                    <select v-model="form.digest_frequency" class="rounded-md border-gray-300 text-sm">
+                        <option value="off">Off</option>
+                        <option value="weekly">Weekly — Mondays</option>
+                    </select>
+                </label>
             </div>
 
             <div class="flex items-center gap-4">
