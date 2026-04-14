@@ -42,6 +42,9 @@ class HandleInertiaRequests extends Middleware
                 'github' => (bool) config('services.github.client_id'),
                 'google' => (bool) config('services.google.client_id'),
             ],
+            'admin' => fn () => $request->user()?->is_admin
+                ? ['pending_reports' => \App\Models\Report::where('status', 'pending')->count()]
+                : null,
         ];
     }
 }

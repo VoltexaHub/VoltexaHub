@@ -39,6 +39,27 @@
                                     @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:underline text-xs">Delete</button>
                                 </form>
+                            @elseif(auth()->id() !== $post->user_id)
+                                <details class="relative">
+                                    <summary class="text-gray-500 hover:text-red-600 text-xs cursor-pointer list-none">Report</summary>
+                                    <form method="POST" action="{{ route('posts.report', $post->id) }}"
+                                          class="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded shadow-lg p-3 z-10 space-y-2">
+                                        @csrf
+                                        <label class="block text-xs font-medium text-gray-700">Reason</label>
+                                        <select name="reason" class="w-full rounded border-gray-300 text-sm" required>
+                                            <option value="spam">Spam</option>
+                                            <option value="harassment">Harassment</option>
+                                            <option value="off-topic">Off-topic</option>
+                                            <option value="illegal">Illegal content</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                        <textarea name="note" rows="2" maxlength="500" placeholder="Optional note..."
+                                                  class="w-full rounded border-gray-300 text-sm"></textarea>
+                                        <button type="submit" class="w-full px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700">
+                                            Submit report
+                                        </button>
+                                    </form>
+                                </details>
                             @endif
                         @endauth
                     </div>

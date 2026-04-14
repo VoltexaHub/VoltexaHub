@@ -6,6 +6,7 @@ use App\Http\Controllers\ForumIndexController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostEditController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ThreadController;
 use App\Http\Controllers\UserProfileController;
@@ -24,6 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/posts/{post}/edit', [PostEditController::class, 'edit'])->name('posts.edit');
     Route::put('/posts/{post}', [PostEditController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [PostEditController::class, 'destroy'])->name('posts.destroy');
+    Route::post('/posts/{post}/report', [ReportController::class, 'store'])->name('posts.report');
 
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->middleware('verified')->name('dashboard');
 
@@ -44,6 +46,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('plugins', [Admin\PluginController::class, 'index'])->name('plugins.index');
     Route::post('plugins/{slug}/enable', [Admin\PluginController::class, 'enable'])->name('plugins.enable');
     Route::post('plugins/{slug}/disable', [Admin\PluginController::class, 'disable'])->name('plugins.disable');
+
+    Route::get('reports', [Admin\ReportController::class, 'index'])->name('reports.index');
+    Route::post('reports/{report}/dismiss', [Admin\ReportController::class, 'dismiss'])->name('reports.dismiss');
+    Route::post('reports/{report}/resolve-delete', [Admin\ReportController::class, 'resolveDelete'])->name('reports.resolve-delete');
 
     Route::get('settings', [Admin\SettingController::class, 'index'])->name('settings.index');
     Route::put('settings', [Admin\SettingController::class, 'update'])->name('settings.update');

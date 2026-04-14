@@ -4,12 +4,14 @@ import { computed } from 'vue';
 
 const page = usePage();
 const flash = computed(() => page.props.flash || {});
+const admin = computed(() => page.props.admin || {});
 
 const nav = [
     { label: 'Dashboard', route: 'admin.dashboard' },
     { label: 'Categories', route: 'admin.categories.index' },
     { label: 'Forums', route: 'admin.forums.index' },
     { label: 'Threads', route: 'admin.threads.index' },
+    { label: 'Reports', route: 'admin.reports.index', badgeKey: 'pending_reports' },
     { label: 'Users', route: 'admin.users.index' },
     { label: 'Plugins', route: 'admin.plugins.index' },
     { label: 'Settings', route: 'admin.settings.index' },
@@ -29,9 +31,13 @@ const isActive = (name) => page.url.startsWith('/admin') && route().current(name
                             v-for="item in nav"
                             :key="item.route"
                             :href="route(item.route)"
-                            :class="['hover:text-white', isActive(item.route) ? 'text-white' : 'text-gray-300']"
+                            :class="['hover:text-white flex items-center gap-1.5', isActive(item.route) ? 'text-white' : 'text-gray-300']"
                         >
                             {{ item.label }}
+                            <span v-if="item.badgeKey && admin[item.badgeKey] > 0"
+                                  class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 text-xs font-semibold bg-red-500 text-white rounded-full">
+                                {{ admin[item.badgeKey] }}
+                            </span>
                         </Link>
                     </nav>
                 </div>
