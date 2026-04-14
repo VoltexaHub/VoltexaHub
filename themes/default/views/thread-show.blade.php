@@ -43,6 +43,13 @@
             </div>
             @auth
                 <div class="shrink-0 flex items-center gap-2">
+                    @if(auth()->user()->is_admin || auth()->id() === $thread->user_id)
+                        <a href="{{ route('threads.export', [$forum->slug, $thread->slug]) }}"
+                           class="vx-btn-secondary text-xs py-1.5 px-3" title="Download thread as markdown">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            Export
+                        </a>
+                    @endif
                     @if($bookmarked ?? false)
                         <form method="POST" action="{{ route('bookmarks.destroy', $thread) }}">
                             @csrf @method('DELETE')

@@ -59,6 +59,7 @@ const destroy = (thread) => {
                     <td class="py-4 text-right tabular-nums" style="color:var(--text-muted)">{{ thread.posts_count }}</td>
                     <td class="py-4 font-mono text-xs" style="color:var(--text-subtle)">{{ thread.last_post_at ? new Date(thread.last_post_at).toLocaleDateString() : '—' }}</td>
                     <td class="py-4 text-right space-x-3 text-xs">
+                        <Link :href="route('admin.threads.edit', thread.id)" class="hover:underline" :style="{ color: 'var(--accent)' }">Edit</Link>
                         <button @click="togglePin(thread)" class="hover:underline" :style="{ color: thread.is_pinned ? 'var(--accent)' : 'var(--text-muted)' }">
                             {{ thread.is_pinned ? 'Unpin' : 'Pin' }}
                         </button>

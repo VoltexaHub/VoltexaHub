@@ -27,6 +27,16 @@ class ThreadController extends Controller
         ]);
     }
 
+    public function edit(Thread $thread): Response
+    {
+        $thread->load('forum:id,name,slug');
+
+        return Inertia::render('Admin/Threads/Edit', [
+            'thread' => $thread,
+            'forums' => Forum::orderBy('name')->get(['id', 'name']),
+        ]);
+    }
+
     public function update(Request $request, Thread $thread): RedirectResponse
     {
         $data = $request->validate([
@@ -34,7 +44,18 @@ class ThreadController extends Controller
             'is_locked' => ['sometimes', 'boolean'],
             'forum_id' => ['sometimes', 'exists:forums,id'],
             'title' => ['sometimes', 'string', 'min:3', 'max:200'],
+            'slug' => ['sometimes', 'string', 'max:220', 'alpha_dash'],
         ]);
+
+        if (isset($data['slug'])) {
+            $conflict = Thread::where('forum_id', $data['forum_id'] ?? $thread->forum_id)
+                ->where('slug', $data['slug'])
+                ->where('id', '!=', $thread->id)
+                ->exists();
+            if ($conflict) {
+                return back()->withErrors(['slug' => 'Another thread in this forum already uses that slug.']);
+            }
+        }
 
         if (isset($data['forum_id']) && $data['forum_id'] !== $thread->forum_id) {
             $oldForum = $thread->forum;

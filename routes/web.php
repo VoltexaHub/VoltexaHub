@@ -20,6 +20,7 @@ use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ThreadController;
+use App\Http\Controllers\ThreadExportController;
 use App\Http\Controllers\UserBlockController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
@@ -82,13 +83,14 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/forums/{forum:slug}/threads/{thread:slug}/unread', [ThreadController::class, 'unread'])->name('threads.unread');
 Route::get('/forums/{forum:slug}/threads/{thread:slug}', [ThreadController::class, 'show'])->name('threads.show');
+Route::middleware('auth')->get('/forums/{forum:slug}/threads/{thread:slug}/export', ThreadExportController::class)->name('threads.export');
 Route::get('/og/threads/{thread}.png', OgImageController::class)->name('og.thread');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', Admin\DashboardController::class)->name('dashboard');
     Route::resource('categories', Admin\CategoryController::class)->except(['show']);
     Route::resource('forums', Admin\ForumController::class)->except(['show']);
-    Route::resource('threads', Admin\ThreadController::class)->only(['index', 'update', 'destroy']);
+    Route::resource('threads', Admin\ThreadController::class)->only(['index', 'edit', 'update', 'destroy']);
     Route::resource('users', Admin\UserController::class)->only(['index', 'update', 'destroy']);
 
     Route::get('plugins', [Admin\PluginController::class, 'index'])->name('plugins.index');
