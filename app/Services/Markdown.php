@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
+use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 use League\CommonMark\MarkdownConverter;
-use League\CommonMark\Environment\Environment;
 
 class Markdown
 {
@@ -26,6 +26,68 @@ class Markdown
 
     public function toHtml(string $markdown): string
     {
-        return (string) $this->converter->convert($markdown);
+        $html = (string) $this->converter->convert($markdown);
+
+        return $this->embedLinks($html);
+    }
+
+    /**
+     * Swap paragraphs that are just a bare URL for a rich embed.
+     * Currently supports YouTube; everything else renders as a neutral link card.
+     */
+    private function embedLinks(string $html): string
+    {
+        return preg_replace_callback(
+            '#<p><a href="([^"]+)">([^<]+)</a></p>#',
+            function (array $m) {
+                $url = html_entity_decode($m[1]);
+                $label = $m[2];
+
+                if ($url !== html_entity_decode($label)) {
+                    // The linked text was customized ([label](url)) — keep the original paragraph.
+                    return $m[0];
+                }
+
+                if ($vid = $this->youtubeId($url)) {
+                    return sprintf(
+                        '<div class="vx-embed vx-embed-youtube" style="position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:0.5rem;border:1px solid var(--border);margin:1em 0;background:#000">'
+                        .'<iframe src="https://www.youtube-nocookie.com/embed/%s" title="YouTube video" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"'
+                        .' style="position:absolute;inset:0;width:100%%;height:100%%"></iframe>'
+                        .'</div>',
+                        htmlspecialchars($vid, ENT_QUOTES),
+                    );
+                }
+
+                return $this->linkCard($url);
+            },
+            $html,
+        ) ?? $html;
+    }
+
+    private function youtubeId(string $url): ?string
+    {
+        if (preg_match('#^https?://(?:www\.)?youtube\.com/watch\?(?:.+&)?v=([\w\-]{6,20})#', $url, $m)) {
+            return $m[1];
+        }
+        if (preg_match('#^https?://youtu\.be/([\w\-]{6,20})#', $url, $m)) {
+            return $m[1];
+        }
+
+        return null;
+    }
+
+    private function linkCard(string $url): string
+    {
+        $host = parse_url($url, PHP_URL_HOST) ?: $url;
+
+        return sprintf(
+            '<a class="vx-embed vx-embed-link" href="%1$s" rel="nofollow noopener noreferrer" target="_blank"'
+            .' style="display:block;margin:1em 0;padding:0.75rem 1rem;border:1px solid var(--border);border-radius:0.5rem;background:var(--surface-mute);text-decoration:none;transition:border-color 140ms">'
+            .'<div style="font-family:\'JetBrains Mono\',ui-monospace,monospace;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-subtle)">%2$s</div>'
+            .'<div style="color:var(--accent);font-weight:500;margin-top:0.15em;word-break:break-all">%1$s</div>'
+            .'</a>',
+            htmlspecialchars($url, ENT_QUOTES),
+            htmlspecialchars($host, ENT_QUOTES),
+        );
     }
 }
