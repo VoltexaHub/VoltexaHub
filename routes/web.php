@@ -1,10 +1,11 @@
 <?php
 
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ForumIndexController;
-use App\Http\Controllers\PostController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostEditController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -15,24 +16,24 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', ForumIndexController::class)->name('home');
-Route::get('/search', SearchController::class)->name('search');
+Route::get('/search', SearchController::class)->middleware('throttle:search')->name('search');
 Route::get('/users/{user}', UserProfileController::class)->name('users.show');
 Route::get('/forums/{forum:slug}', [ForumController::class, 'show'])->name('forums.show');
 
 Route::middleware('auth')->group(function () {
     Route::get('/forums/{forum:slug}/threads/create', [ThreadController::class, 'create'])->name('threads.create');
-    Route::post('/forums/{forum:slug}/threads', [ThreadController::class, 'store'])->name('threads.store');
-    Route::post('/forums/{forum:slug}/threads/{thread:slug}/posts', [PostController::class, 'store'])->name('posts.store');
+    Route::post('/forums/{forum:slug}/threads', [ThreadController::class, 'store'])->middleware('throttle:threads.create')->name('threads.store');
+    Route::post('/forums/{forum:slug}/threads/{thread:slug}/posts', [PostController::class, 'store'])->middleware('throttle:posts.create')->name('posts.store');
     Route::get('/posts/{post}/edit', [PostEditController::class, 'edit'])->name('posts.edit');
     Route::put('/posts/{post}', [PostEditController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [PostEditController::class, 'destroy'])->name('posts.destroy');
-    Route::post('/posts/{post}/report', [ReportController::class, 'store'])->name('posts.report');
+    Route::post('/posts/{post}/report', [ReportController::class, 'store'])->middleware('throttle:posts.report')->name('posts.report');
 
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/new', [MessageController::class, 'create'])->name('messages.create');
-    Route::post('/messages', [MessageController::class, 'store'])->name('messages.store');
+    Route::post('/messages', [MessageController::class, 'store'])->middleware('throttle:messages.send')->name('messages.store');
     Route::get('/messages/{conversation}', [MessageController::class, 'show'])->name('messages.show');
-    Route::post('/messages/{conversation}/reply', [MessageController::class, 'reply'])->name('messages.reply');
+    Route::post('/messages/{conversation}/reply', [MessageController::class, 'reply'])->middleware('throttle:messages.send')->name('messages.reply');
 
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->middleware('verified')->name('dashboard');
 
@@ -40,7 +41,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::post('/profile/avatar', [AvatarController::class, 'update'])->name('profile.avatar.update');
+    Route::post('/profile/avatar', [AvatarController::class, 'update'])->middleware('throttle:avatar.update')->name('profile.avatar.update');
     Route::delete('/profile/avatar', [AvatarController::class, 'destroy'])->name('profile.avatar.destroy');
 });
 

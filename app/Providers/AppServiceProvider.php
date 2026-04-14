@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Conversation;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
@@ -16,6 +19,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        $this->configureRateLimiters();
 
         view()->composer('theme::*', function ($view) {
             $user = auth()->user();
@@ -37,6 +42,33 @@ class AppServiceProvider extends ServiceProvider
                     ->count();
             }
             $view->with('unreadMessages', $unread);
+        });
+    }
+
+    private function configureRateLimiters(): void
+    {
+        $byUser = fn (Request $request) => $request->user()?->id ?: $request->ip();
+        $adminBypass = fn (Request $request) => $request->user()?->is_admin
+            ? Limit::none()
+            : null;
+
+        RateLimiter::for('threads.create', function (Request $request) use ($byUser, $adminBypass) {
+            return $adminBypass($request) ?? Limit::perHour(5)->by($byUser($request));
+        });
+        RateLimiter::for('posts.create', function (Request $request) use ($byUser, $adminBypass) {
+            return $adminBypass($request) ?? Limit::perHour(30)->by($byUser($request));
+        });
+        RateLimiter::for('posts.report', function (Request $request) use ($byUser) {
+            return Limit::perHour(10)->by($byUser($request));
+        });
+        RateLimiter::for('messages.send', function (Request $request) use ($byUser, $adminBypass) {
+            return $adminBypass($request) ?? Limit::perHour(30)->by($byUser($request));
+        });
+        RateLimiter::for('avatar.update', function (Request $request) use ($byUser) {
+            return Limit::perHour(20)->by($byUser($request));
+        });
+        RateLimiter::for('search', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
     }
 }
