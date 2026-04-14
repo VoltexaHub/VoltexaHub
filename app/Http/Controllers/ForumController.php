@@ -17,6 +17,16 @@ class ForumController extends Controller
             ->orderByDesc('last_post_at')
             ->paginate(20);
 
-        return view('theme::forum-show', compact('forum', 'threads'));
+        // Which threads on this page have unread activity for the viewer?
+        $lastReadMap = [];
+        if ($user = request()->user()) {
+            $lastReadMap = \App\Models\ThreadSubscription::query()
+                ->where('user_id', $user->id)
+                ->whereIn('thread_id', $threads->pluck('id'))
+                ->pluck('last_read_at', 'thread_id')
+                ->all();
+        }
+
+        return view('theme::forum-show', compact('forum', 'threads', 'lastReadMap'));
     }
 }

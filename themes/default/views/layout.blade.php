@@ -77,6 +77,24 @@
             </div>
         </header>
 
+        @if($announcement ?? null)
+            @php
+                $tone = $announcement['tone'] ?? 'info';
+                $toneStyles = match($tone) {
+                    'warning' => 'background:#fef3c7;color:#78350f;border-color:#fcd34d;',
+                    'notice'  => 'background:var(--surface-mute);color:var(--text);border-color:var(--border);',
+                    default   => 'background:color-mix(in oklch, var(--accent) 10%, transparent);color:var(--accent-hover);border-color:color-mix(in oklch, var(--accent) 30%, transparent);',
+                };
+            @endphp
+            <div class="vx-announcement border-b text-sm" style="{{ $toneStyles }}" data-announcement-version="{{ $announcement['version'] }}">
+                <div class="max-w-5xl mx-auto px-5 py-2.5 flex items-start gap-4">
+                    <span class="vx-meta shrink-0 pt-0.5" style="color:inherit;opacity:0.7">{{ strtoupper($tone) }}</span>
+                    <p class="flex-1 leading-relaxed">{{ $announcement['message'] }}</p>
+                    <button type="button" class="vx-announcement-dismiss shrink-0 text-xl leading-none opacity-70 hover:opacity-100" title="Dismiss" aria-label="Dismiss announcement">×</button>
+                </div>
+            </div>
+        @endif
+
         @if(session('flash.success'))
             <div class="vx-flash vx-flash-success">
                 <div class="max-w-5xl mx-auto px-5">{{ session('flash.success') }}</div>
@@ -108,13 +126,27 @@
     <script>
         (function () {
             var btn = document.getElementById('vx-theme-toggle');
-            if (!btn) return;
-            btn.addEventListener('click', function () {
-                var root = document.documentElement;
-                var next = root.classList.contains('dark') ? 'light' : 'dark';
-                root.classList.toggle('dark', next === 'dark');
-                try { localStorage.setItem('theme', next); } catch (e) {}
-            });
+            if (btn) {
+                btn.addEventListener('click', function () {
+                    var root = document.documentElement;
+                    var next = root.classList.contains('dark') ? 'light' : 'dark';
+                    root.classList.toggle('dark', next === 'dark');
+                    try { localStorage.setItem('theme', next); } catch (e) {}
+                });
+            }
+
+            // Announcement dismiss, keyed by version so new announcements re-appear.
+            var bar = document.querySelector('.vx-announcement');
+            if (bar) {
+                var v = bar.getAttribute('data-announcement-version') || '0';
+                var key = 'vx-announcement-dismissed-' + v;
+                try { if (localStorage.getItem(key)) bar.remove(); } catch (e) {}
+                var close = bar.querySelector('.vx-announcement-dismiss');
+                if (close) close.addEventListener('click', function () {
+                    try { localStorage.setItem(key, '1'); } catch (e) {}
+                    bar.remove();
+                });
+            }
         })();
     </script>
     @stack('scripts')

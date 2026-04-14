@@ -54,6 +54,34 @@ class ThreadController extends Controller
         return view('theme::thread-create', compact('forum'));
     }
 
+    public function unread(Forum $forum, Thread $thread): RedirectResponse
+    {
+        abort_unless($thread->forum_id === $forum->id, 404);
+
+        $target = $thread->posts()->oldest('created_at')->first();
+
+        if ($user = request()->user()) {
+            $sub = \App\Models\ThreadSubscription::query()
+                ->where('user_id', $user->id)
+                ->where('thread_id', $thread->id)
+                ->first();
+
+            if ($sub?->last_read_at) {
+                $candidate = $thread->posts()
+                    ->where('created_at', '>', $sub->last_read_at)
+                    ->oldest('created_at')
+                    ->first();
+                if ($candidate) {
+                    $target = $candidate;
+                }
+            }
+        }
+
+        $anchor = $target ? '#post-'.$target->id : '';
+
+        return redirect()->to(route('threads.show', [$forum->slug, $thread->slug]).$anchor);
+    }
+
     public function store(Request $request, Forum $forum): RedirectResponse
     {
         $data = $request->validate([

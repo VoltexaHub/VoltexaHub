@@ -47,6 +47,13 @@ class AppServiceProvider extends ServiceProvider
             }
             $view->with('unreadMessages', $unread);
             $view->with('unreadNotifications', $user ? $user->unreadNotifications()->count() : 0);
+
+            $message = \App\Models\Setting::get('announcement.message');
+            $view->with('announcement', $message ? [
+                'message' => $message,
+                'tone' => \App\Models\Setting::get('announcement.tone', 'info'),
+                'version' => (int) \App\Models\Setting::get('announcement.version', 1),
+            ] : null);
         });
     }
 

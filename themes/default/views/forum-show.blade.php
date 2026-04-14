@@ -27,6 +27,16 @@
 
     <ul class="vx-row-divide">
         @forelse($threads as $thread)
+            @php
+                $lastRead = $lastReadMap[$thread->id] ?? null;
+                if ($lastRead && ! $lastRead instanceof \Carbon\Carbon) {
+                    $lastRead = \Carbon\Carbon::parse($lastRead);
+                }
+                $hasUnread = auth()->check()
+                    && $lastRead
+                    && $thread->last_post_at
+                    && $thread->last_post_at->gt($lastRead);
+            @endphp
             <li class="py-5 flex items-start gap-6 group">
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 flex-wrap">
@@ -36,6 +46,15 @@
                            class="vx-display text-lg font-medium vx-heading hover:text-[color:var(--accent)] transition-colors">
                             {{ $thread->title }}
                         </a>
+                        @if($hasUnread)
+                            <a href="{{ route('threads.unread', [$forum->slug, $thread->slug]) }}"
+                               class="inline-flex items-center gap-1 text-[0.68rem] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded"
+                               style="background:var(--accent-weak);color:var(--accent);border:1px solid color-mix(in oklch, var(--accent) 30%, transparent)"
+                               title="Jump to first unread post">
+                                New
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7-7l7 7-7 7"/></svg>
+                            </a>
+                        @endif
                     </div>
                     <p class="vx-meta mt-1 normal-case tracking-normal text-[0.72rem]">
                         by @if($thread->author)<a href="{{ route('users.show', $thread->author) }}" class="hover:text-[color:var(--accent)] vx-muted">{{ $thread->author->name }}</a>@else [deleted] @endif

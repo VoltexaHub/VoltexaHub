@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/threads/{thread}/unmute', [ThreadSubscriptionController::class, 'unmute'])->name('threads.unmute');
 });
 
+Route::get('/forums/{forum:slug}/threads/{thread:slug}/unread', [ThreadController::class, 'unread'])->name('threads.unread');
 Route::get('/forums/{forum:slug}/threads/{thread:slug}', [ThreadController::class, 'show'])->name('threads.show');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {

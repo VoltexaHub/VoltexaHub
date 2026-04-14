@@ -9,6 +9,8 @@ const form = useForm({
     github_client_secret: '',
     google_client_id: props.settings.oauth.google.client_id || '',
     google_client_secret: '',
+    announcement_message: props.settings.announcement?.message || '',
+    announcement_tone: props.settings.announcement?.tone || 'info',
 });
 
 const save = () => {
@@ -93,6 +95,32 @@ const clearSecret = (provider) => {
                                         class="mt-2 text-xs text-red-600 hover:underline">Clear saved secret</button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <header class="mb-5">
+                    <h2 class="font-serif text-2xl font-semibold tracking-tight" style="font-family:'Fraunces',serif;color:var(--text)">Announcement</h2>
+                    <p class="text-sm mt-1" style="color:var(--text-muted)">
+                        A sitewide banner shown above every page. Leave blank to hide. Changing the text bumps the version and re-shows it to users who dismissed an earlier one.
+                    </p>
+                </header>
+
+                <div class="pt-5 border-t space-y-4" :style="{ borderColor: 'var(--border)' }">
+                    <div>
+                        <label class="vx-meta mb-2 block">Message</label>
+                        <textarea v-model="form.announcement_message" rows="3" maxlength="1000"
+                                  placeholder="e.g. We'll be upgrading the forum Friday at 8pm UTC."
+                                  class="vx-input text-sm"></textarea>
+                    </div>
+                    <div>
+                        <label class="vx-meta mb-2 block">Tone</label>
+                        <select v-model="form.announcement_tone" class="vx-input text-sm w-48">
+                            <option value="info">Info (accent)</option>
+                            <option value="notice">Notice (neutral)</option>
+                            <option value="warning">Warning (amber)</option>
+                        </select>
                     </div>
                 </div>
             </section>
