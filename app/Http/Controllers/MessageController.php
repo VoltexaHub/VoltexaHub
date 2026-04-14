@@ -74,8 +74,7 @@ class MessageController extends Controller
             ->whereHas('participants', fn ($q) => $q->where('users.id', $me->id))
             ->whereHas('participants', fn ($q) => $q->where('users.id', $recipientId))
             ->whereDoesntHave('participants', fn ($q) => $q->whereNotIn('users.id', [$me->id, $recipientId]))
-            ->withCount('participants')
-            ->having('participants_count', '=', 2)
+            ->has('participants', '=', 2)
             ->first();
 
         $message = null;
