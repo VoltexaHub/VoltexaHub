@@ -17,6 +17,10 @@
                 <a href="{{ route('home') }}" class="text-lg font-semibold text-gray-900">
                     {{ $activeTheme['name'] ?? 'VoltexaHub' }}
                 </a>
+                <form method="GET" action="{{ route('search') }}" class="hidden md:block flex-1 max-w-xs mx-6">
+                    <input name="q" type="search" value="{{ request('q') }}" placeholder="Search..."
+                           class="w-full rounded border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                </form>
                 <nav class="flex items-center gap-4 text-sm">
                     @auth
                         @if(auth()->user()->is_admin)
