@@ -117,6 +117,10 @@ docker compose logs -f app                      # Tail Laravel logs
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Solo for now; contributions welcome as the project matures.
 
+## Deploying to production
+
+See [docs/DEPLOY.md](docs/DEPLOY.md) for a single-host Docker Compose recipe with Caddy, a queue worker, Reverb WebSockets, and a production .env template.
+
 ## Roadmap
 
 **v0.1 (foundation — shipped):** auth, forums/categories/threads/posts, markdown editor, default responsive theme, theme + plugin loaders, admin panel, Docker deploy.
