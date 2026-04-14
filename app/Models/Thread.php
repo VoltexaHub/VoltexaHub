@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Thread extends Model
@@ -42,5 +43,10 @@ class Thread extends Model
     public function lastPost(): BelongsTo
     {
         return $this->belongsTo(Post::class, 'last_post_id');
+    }
+
+    public function poll(): HasOne
+    {
+        return $this->hasOne(Poll::class);
     }
 }

@@ -26,7 +26,7 @@ class ThreadController extends Controller
             ->orderBy('created_at')
             ->paginate(20);
 
-        $thread->load('author:id,name');
+        $thread->load(['author:id,name', 'poll.options']);
         $forum->load('category:id,name,slug');
 
         $mutedByUser = false;
@@ -96,6 +96,10 @@ class ThreadController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'min:3', 'max:200'],
             'body' => ['required', 'string', 'min:2'],
+            'poll_question' => ['nullable', 'string', 'max:250'],
+            'poll_options' => ['nullable', 'array', 'min:2', 'max:10'],
+            'poll_options.*' => ['nullable', 'string', 'max:200'],
+            'poll_allow_multiple' => ['nullable', 'boolean'],
         ]);
 
         $thread = $forum->threads()->create([
@@ -121,6 +125,20 @@ class ThreadController extends Controller
             'last_post_id' => $post->id,
             'last_post_at' => $post->created_at,
         ]);
+
+        $cleanOptions = array_values(array_filter(
+            array_map('trim', (array) ($data['poll_options'] ?? [])),
+            fn ($s) => $s !== '',
+        ));
+        if (! empty($data['poll_question']) && count($cleanOptions) >= 2) {
+            $poll = $thread->poll()->create([
+                'question' => $data['poll_question'],
+                'allow_multiple' => (bool) ($data['poll_allow_multiple'] ?? false),
+            ]);
+            foreach ($cleanOptions as $i => $text) {
+                $poll->options()->create(['text' => $text, 'position' => $i]);
+            }
+        }
 
         return redirect()->route('threads.show', [$forum->slug, $thread->slug]);
     }

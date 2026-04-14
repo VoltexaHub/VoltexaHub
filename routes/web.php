@@ -9,6 +9,8 @@ use App\Http\Controllers\ImageUploadController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationPreferenceController;
+use App\Http\Controllers\OgImageController;
+use App\Http\Controllers\PollController;
 use App\Http\Controllers\ThreadSubscriptionController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostEditController;
@@ -69,10 +71,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/blocks', [UserBlockController::class, 'index'])->name('blocks.index');
     Route::post('/users/{user}/block', [UserBlockController::class, 'store'])->name('blocks.store');
     Route::delete('/users/{user}/block', [UserBlockController::class, 'destroy'])->name('blocks.destroy');
+
+    Route::post('/polls/{poll}/vote', [PollController::class, 'vote'])->name('polls.vote');
+    Route::delete('/polls/{poll}/vote', [PollController::class, 'clear'])->name('polls.clear');
 });
 
 Route::get('/forums/{forum:slug}/threads/{thread:slug}/unread', [ThreadController::class, 'unread'])->name('threads.unread');
 Route::get('/forums/{forum:slug}/threads/{thread:slug}', [ThreadController::class, 'show'])->name('threads.show');
+Route::get('/og/threads/{thread}.png', OgImageController::class)->name('og.thread');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', Admin\DashboardController::class)->name('dashboard');

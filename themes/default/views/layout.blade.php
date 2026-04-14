@@ -19,6 +19,7 @@
         })();
     </script>
     @vite(['resources/css/app.css'])
+    @stack('head')
     @hook('head')
 </head>
 <body class="font-sans">

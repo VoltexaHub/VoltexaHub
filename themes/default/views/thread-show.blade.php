@@ -2,6 +2,15 @@
 
 @section('title', $thread->title.' · '.config('app.name'))
 
+@push('head')
+    <meta property="og:title" content="{{ $thread->title }}" />
+    <meta property="og:description" content="{{ \Illuminate\Support\Str::limit(strip_tags($posts->first()?->body ?? ''), 200) }}" />
+    <meta property="og:image" content="{{ route('og.thread', $thread) }}" />
+    <meta property="og:type" content="article" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="{{ route('og.thread', $thread) }}" />
+@endpush
+
 @push('scripts')
     @vite(['resources/js/markdown-editor.js', 'resources/js/thread-live.js', 'resources/js/reactions.js', 'resources/js/quote.js'])
 @endpush
@@ -73,6 +82,10 @@
             @endauth
         </div>
     </header>
+
+    @if($thread->poll)
+        @include('theme::partials.poll', ['poll' => $thread->poll])
+    @endif
 
     @php $markerShown = false; @endphp
     <div class="space-y-0 border-t vx-hairline" data-thread-posts data-thread-id="{{ $thread->id }}">
