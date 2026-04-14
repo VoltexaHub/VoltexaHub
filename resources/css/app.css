@@ -245,6 +245,17 @@
     html.dark .vx-flash-error { background: rgba(69,10,10,0.4); color: #fca5a5; border-bottom-color: rgba(127,29,29,0.6); }
 }
 
+/* Post-anchor flash: brief accent glow when arriving via #post-N */
+@keyframes vx-flash {
+    0%   { background-color: color-mix(in oklch, var(--accent) 18%, transparent); box-shadow: inset 3px 0 0 var(--accent); }
+    25%  { background-color: color-mix(in oklch, var(--accent) 14%, transparent); box-shadow: inset 3px 0 0 var(--accent); }
+    100% { background-color: transparent; box-shadow: inset 3px 0 0 transparent; }
+}
+article[id^="post-"]:target {
+    animation: vx-flash 2.2s ease-out 0.1s both;
+    scroll-margin-top: 5rem;
+}
+
 /* EasyMDE + prose styling nudges to match the palette */
 .EasyMDEContainer .editor-toolbar { background: var(--surface-mute); border-color: var(--border); border-radius: 0.5rem 0.5rem 0 0; }
 .EasyMDEContainer .CodeMirror { background: var(--surface); color: var(--text); border-color: var(--border); border-radius: 0 0 0.5rem 0.5rem; }

@@ -54,8 +54,17 @@
         </div>
     </header>
 
+    @php $markerShown = false; @endphp
     <div class="space-y-0 border-t vx-hairline" data-thread-posts data-thread-id="{{ $thread->id }}">
         @foreach($posts as $post)
+            @if(($previouslyReadAt ?? null) && ! $markerShown && $post->created_at->gt($previouslyReadAt) && $loop->index > 0)
+                @php $markerShown = true; @endphp
+                <div class="vx-unread-marker flex items-center gap-3 py-3 text-[color:var(--accent)]">
+                    <span class="flex-1 h-px" style="background:var(--accent);opacity:0.45"></span>
+                    <span class="vx-meta normal-case tracking-[0.12em]" style="color:var(--accent)">New since {{ $previouslyReadAt->diffForHumans() }}</span>
+                    <span class="flex-1 h-px" style="background:var(--accent);opacity:0.45"></span>
+                </div>
+            @endif
             <article class="border-b vx-hairline py-7" id="post-{{ $post->id }}">
                 <header class="flex items-start justify-between gap-4 mb-4">
                     <div class="flex items-center gap-3">

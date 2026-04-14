@@ -26,15 +26,27 @@ class ThreadController extends Controller
         $forum->load('category:id,name,slug');
 
         $mutedByUser = false;
+        $previouslyReadAt = null;
+
         if ($user = request()->user()) {
-            $mutedByUser = \App\Models\ThreadSubscription::query()
+            $sub = \App\Models\ThreadSubscription::query()
                 ->where('user_id', $user->id)
                 ->where('thread_id', $thread->id)
-                ->where('state', \App\Models\ThreadSubscription::STATE_MUTED)
-                ->exists();
+                ->first();
+
+            $mutedByUser = $sub && $sub->state === \App\Models\ThreadSubscription::STATE_MUTED;
+            $previouslyReadAt = $sub?->last_read_at;
+
+            \App\Models\ThreadSubscription::updateOrCreate(
+                ['user_id' => $user->id, 'thread_id' => $thread->id],
+                [
+                    'state' => $sub->state ?? \App\Models\ThreadSubscription::STATE_SUBSCRIBED,
+                    'last_read_at' => now(),
+                ],
+            );
         }
 
-        return view('theme::thread-show', compact('forum', 'thread', 'posts', 'mutedByUser'));
+        return view('theme::thread-show', compact('forum', 'thread', 'posts', 'mutedByUser', 'previouslyReadAt'));
     }
 
     public function create(Forum $forum): View
