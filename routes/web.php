@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\AvatarController;
+use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ForumIndexController;
 use App\Http\Controllers\ImageUploadController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ThreadController;
+use App\Http\Controllers\UserBlockController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -58,6 +60,14 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/threads/{thread}/mute', [ThreadSubscriptionController::class, 'mute'])->name('threads.mute');
     Route::post('/threads/{thread}/unmute', [ThreadSubscriptionController::class, 'unmute'])->name('threads.unmute');
+
+    Route::get('/bookmarks', [BookmarkController::class, 'index'])->name('bookmarks.index');
+    Route::post('/threads/{thread}/bookmark', [BookmarkController::class, 'store'])->name('bookmarks.store');
+    Route::delete('/threads/{thread}/bookmark', [BookmarkController::class, 'destroy'])->name('bookmarks.destroy');
+
+    Route::get('/blocks', [UserBlockController::class, 'index'])->name('blocks.index');
+    Route::post('/users/{user}/block', [UserBlockController::class, 'store'])->name('blocks.store');
+    Route::delete('/users/{user}/block', [UserBlockController::class, 'destroy'])->name('blocks.destroy');
 });
 
 Route::get('/forums/{forum:slug}/threads/{thread:slug}/unread', [ThreadController::class, 'unread'])->name('threads.unread');

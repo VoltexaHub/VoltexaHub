@@ -70,6 +70,20 @@ class MessageController extends Controller
             return back()->with('flash.error', "You can't message yourself.");
         }
 
+        // Either party having blocked the other stops the conversation.
+        $hasBlock = \App\Models\UserBlock::query()
+            ->where(function ($q) use ($me, $recipientId) {
+                $q->where('blocker_id', $me->id)->where('blocked_id', $recipientId);
+            })
+            ->orWhere(function ($q) use ($me, $recipientId) {
+                $q->where('blocker_id', $recipientId)->where('blocked_id', $me->id);
+            })
+            ->exists();
+
+        if ($hasBlock) {
+            return back()->with('flash.error', "You can't message this user.");
+        }
+
         $conversation = Conversation::query()
             ->whereHas('participants', fn ($q) => $q->where('users.id', $me->id))
             ->whereHas('participants', fn ($q) => $q->where('users.id', $recipientId))

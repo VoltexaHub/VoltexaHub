@@ -47,6 +47,11 @@
                                 </span>
                             @endif
                         </a>
+                        <a href="{{ route('bookmarks.index') }}" class="vx-muted hover:vx-heading" title="Bookmarks">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                            </svg>
+                        </a>
                         <a href="{{ route('messages.index') }}" class="relative vx-muted hover:vx-heading">
                             Messages
                             @if(($unreadMessages ?? 0) > 0)

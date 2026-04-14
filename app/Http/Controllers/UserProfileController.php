@@ -26,6 +26,13 @@ class UserProfileController extends Controller
             ->limit(10)
             ->get();
 
-        return view('theme::user-profile', compact('user', 'threadsCount', 'postsCount', 'recentThreads', 'recentPosts'));
+        $isBlocked = false;
+        if ($viewer = request()->user()) {
+            $isBlocked = \App\Models\UserBlock::where('blocker_id', $viewer->id)
+                ->where('blocked_id', $user->id)
+                ->exists();
+        }
+
+        return view('theme::user-profile', compact('user', 'threadsCount', 'postsCount', 'recentThreads', 'recentPosts', 'isBlocked'));
     }
 }

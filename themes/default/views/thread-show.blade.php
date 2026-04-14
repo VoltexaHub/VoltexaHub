@@ -33,23 +33,43 @@
                 </p>
             </div>
             @auth
-                @if($mutedByUser ?? false)
-                    <form method="POST" action="{{ route('threads.unmute', $thread) }}" class="shrink-0">
-                        @csrf
-                        <button type="submit" class="vx-btn-secondary text-xs py-1.5 px-3" title="You won't be notified of new replies">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.73 21a2 2 0 01-3.46 0M18.63 13A17.89 17.89 0 0118 8M6.26 6.26A5.86 5.86 0 006 8c0 7-3 9-3 9h14M18 8a6 6 0 00-9.33-5M1 1l22 22"/></svg>
-                            Muted
-                        </button>
-                    </form>
-                @else
-                    <form method="POST" action="{{ route('threads.mute', $thread) }}" class="shrink-0">
-                        @csrf
-                        <button type="submit" class="vx-btn-secondary text-xs py-1.5 px-3" title="Stop getting notifications for this thread">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14V11a6 6 0 10-12 0v3a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0"/></svg>
-                            Mute
-                        </button>
-                    </form>
-                @endif
+                <div class="shrink-0 flex items-center gap-2">
+                    @if($bookmarked ?? false)
+                        <form method="POST" action="{{ route('bookmarks.destroy', $thread) }}">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="vx-btn-secondary text-xs py-1.5 px-3" title="Remove bookmark" style="color:var(--accent);border-color:var(--accent)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+                                Saved
+                            </button>
+                        </form>
+                    @else
+                        <form method="POST" action="{{ route('bookmarks.store', $thread) }}">
+                            @csrf
+                            <button type="submit" class="vx-btn-secondary text-xs py-1.5 px-3" title="Bookmark this thread">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+                                Save
+                            </button>
+                        </form>
+                    @endif
+
+                    @if($mutedByUser ?? false)
+                        <form method="POST" action="{{ route('threads.unmute', $thread) }}">
+                            @csrf
+                            <button type="submit" class="vx-btn-secondary text-xs py-1.5 px-3" title="You won't be notified of new replies">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.73 21a2 2 0 01-3.46 0M18.63 13A17.89 17.89 0 0118 8M6.26 6.26A5.86 5.86 0 006 8c0 7-3 9-3 9h14M18 8a6 6 0 00-9.33-5M1 1l22 22"/></svg>
+                                Muted
+                            </button>
+                        </form>
+                    @else
+                        <form method="POST" action="{{ route('threads.mute', $thread) }}">
+                            @csrf
+                            <button type="submit" class="vx-btn-secondary text-xs py-1.5 px-3" title="Stop getting notifications for this thread">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14V11a6 6 0 10-12 0v3a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0"/></svg>
+                                Mute
+                            </button>
+                        </form>
+                    @endif
+                </div>
             @endauth
         </div>
     </header>

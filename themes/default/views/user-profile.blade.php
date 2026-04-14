@@ -18,7 +18,20 @@
             </div>
             @auth
                 @if(auth()->id() !== $user->id)
-                    <a href="{{ route('messages.create', ['to' => $user->id]) }}" class="inline-block mt-3 vx-btn-secondary text-xs py-1.5 px-3">Send Message</a>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <a href="{{ route('messages.create', ['to' => $user->id]) }}" class="vx-btn-primary text-xs py-1.5 px-3">Send Message</a>
+                        @if($isBlocked ?? false)
+                            <form method="POST" action="{{ route('blocks.destroy', $user) }}">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="vx-btn-secondary text-xs py-1.5 px-3">Unblock</button>
+                            </form>
+                        @else
+                            <form method="POST" action="{{ route('blocks.store', $user) }}" onsubmit="return confirm('Block {{ $user->name }}? You won\'t see their posts and they won\'t be able to message you.');">
+                                @csrf
+                                <button type="submit" class="vx-btn-secondary text-xs py-1.5 px-3" style="color:#991b1b;border-color:#fecaca">Block</button>
+                            </form>
+                        @endif
+                    </div>
                 @endif
             @endauth
         </div>

@@ -17,8 +17,12 @@ class ThreadController extends Controller
 
         $thread->increment('views_count');
 
+        $user = request()->user();
+        $blockedIds = $user ? \App\Models\UserBlock::blockedBy($user->id) : [];
+
         $posts = $thread->posts()
             ->with(['author:id,name', 'reactions:id,post_id,user_id,emoji'])
+            ->when(! empty($blockedIds), fn ($q) => $q->whereNotIn('user_id', $blockedIds))
             ->orderBy('created_at')
             ->paginate(20);
 
@@ -27,8 +31,9 @@ class ThreadController extends Controller
 
         $mutedByUser = false;
         $previouslyReadAt = null;
+        $bookmarked = false;
 
-        if ($user = request()->user()) {
+        if ($user) {
             $sub = \App\Models\ThreadSubscription::query()
                 ->where('user_id', $user->id)
                 ->where('thread_id', $thread->id)
@@ -44,9 +49,13 @@ class ThreadController extends Controller
                     'last_read_at' => now(),
                 ],
             );
+
+            $bookmarked = \App\Models\Bookmark::where('user_id', $user->id)
+                ->where('thread_id', $thread->id)
+                ->exists();
         }
 
-        return view('theme::thread-show', compact('forum', 'thread', 'posts', 'mutedByUser', 'previouslyReadAt'));
+        return view('theme::thread-show', compact('forum', 'thread', 'posts', 'mutedByUser', 'previouslyReadAt', 'bookmarked'));
     }
 
     public function create(Forum $forum): View
