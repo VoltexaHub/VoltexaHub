@@ -119,7 +119,19 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Solo for now; contributions welcome as t
 
 ## Deploying to production
 
-See [docs/DEPLOY.md](docs/DEPLOY.md) for a single-host recipe. The repo ships `docker-compose.prod.yml` and `docker/Caddyfile` — point the Caddyfile at your domain, fill in your `.env`, and the stack boots with HTTPS, a queue worker, a scheduler (for weekly digests), and Reverb WebSockets.
+### One-paste install
+
+On a fresh Ubuntu 22.04+ / Debian 12+ host with a domain pointing at it:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/VoltexaHub/VoltexaHub/main/scripts/install.sh | sudo bash
+```
+
+The installer prompts for your domain, admin account, and (optional) SMTP credentials, then provisions Docker, clones the repo, writes a hardened `.env`, patches the Caddyfile, builds images, migrates, creates the admin, and runs preflight. Idempotent — re-run it any time to update.
+
+### Manual deploy
+
+See [docs/DEPLOY.md](docs/DEPLOY.md) for the step-by-step recipe. The repo ships `docker-compose.prod.yml` and `docker/Caddyfile` — point the Caddyfile at your domain, fill in your `.env`, and the stack boots with HTTPS, a queue worker, a scheduler (for weekly digests), and Reverb WebSockets.
 
 Pre-flight a deployment any time with:
 
