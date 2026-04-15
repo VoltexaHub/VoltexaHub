@@ -146,10 +146,14 @@
                     <span class="text-[color:var(--accent)]">/</span>
                     Powered by <a href="https://github.com/VoltexaHub/voltexahub" class="hover:text-[color:var(--accent)]">VoltexaHub</a>
                 </p>
-                <button type="button" onclick="window.dispatchEvent(new KeyboardEvent('keydown', {key:'?'}))"
-                        class="vx-meta hover:text-[color:var(--accent)]" title="Keyboard shortcuts">
-                    ? shortcuts
-                </button>
+                <nav class="flex items-center gap-4">
+                    <a href="{{ route('pages.show', 'privacy') }}" class="vx-meta hover:text-[color:var(--accent)]">Privacy</a>
+                    <a href="{{ route('pages.show', 'terms') }}" class="vx-meta hover:text-[color:var(--accent)]">Terms</a>
+                    <button type="button" onclick="window.dispatchEvent(new KeyboardEvent('keydown', {key:'?'}))"
+                            class="vx-meta hover:text-[color:var(--accent)]" title="Keyboard shortcuts">
+                        ? shortcuts
+                    </button>
+                </nav>
                 <p class="vx-meta">Theme · {{ $activeTheme['name'] ?? 'Default' }}</p>
             </div>
         </footer>
