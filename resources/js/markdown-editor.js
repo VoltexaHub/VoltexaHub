@@ -9,6 +9,11 @@ const init = () => {
         if (el.dataset.mdeReady) return;
         el.dataset.mdeReady = '1';
 
+        if (el.hasAttribute('required')) {
+            el.removeAttribute('required');
+            el.dataset.mdeRequired = '1';
+        }
+
         const editor = new EasyMDE({
             element: el,
             spellChecker: false,
@@ -49,6 +54,16 @@ const init = () => {
             },
         });
         el.__mde = editor;
+
+        const form = el.form;
+        if (form && el.dataset.mdeRequired === '1' && !form.dataset.mdeGuard) {
+            form.dataset.mdeGuard = '1';
+            form.addEventListener('submit', (e) => {
+                form.querySelectorAll('textarea[data-markdown][data-mde-required="1"]').forEach((t) => {
+                    if (t.__mde) t.value = t.__mde.value();
+                });
+            });
+        }
     });
 };
 
