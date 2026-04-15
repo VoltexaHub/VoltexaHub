@@ -83,11 +83,10 @@ cd "$INSTALL_DIR"
 # ---------- Gather config ----------
 echo ""
 say "Configuring"
-if [ -z "$TTY_IN" ]; then
-    warn "No controlling terminal detected — install needs to be interactive."
-    warn "Re-run one of these:"
+if [ $INTERACTIVE -eq 0 ]; then
+    warn "No controlling terminal available — install needs to be interactive."
+    warn "Re-run:"
     warn "  curl -fsSL https://raw.githubusercontent.com/VoltexaHub/VoltexaHub/main/scripts/install.sh -o install.sh && sudo bash install.sh"
-    warn "  curl -fsSL https://raw.githubusercontent.com/VoltexaHub/VoltexaHub/main/scripts/install.sh | sudo bash </dev/tty"
     die  "Aborting."
 fi
 
