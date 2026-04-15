@@ -19,6 +19,7 @@
         })();
     </script>
     @vite(['resources/css/app.css'])
+    @vite('resources/js/shortcuts.js')
     @stack('head')
     @hook('head')
 </head>
@@ -34,6 +35,11 @@
                     <input name="q" type="search" value="{{ request('q') }}" placeholder="Search the hub…" class="vx-input text-sm" />
                 </form>
                 <nav class="flex items-center gap-4 text-[0.875rem] ml-auto">
+                    <a href="{{ route('search') }}" class="md:hidden vx-muted hover:vx-heading" title="Search" aria-label="Search">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 17a6.5 6.5 0 100-13 6.5 6.5 0 000 13z"/>
+                        </svg>
+                    </a>
                     @auth
                         <a href="{{ route('messages.index') }}" class="relative vx-muted hover:vx-heading" title="Messages" aria-label="Messages">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
@@ -59,9 +65,9 @@
                                 <svg class="w-3 h-3 vx-subtle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
                             </summary>
                             <div class="absolute right-0 mt-2 w-56 vx-card shadow-sm overflow-hidden py-1 z-30">
-                                <a href="{{ route('users.show', auth()->user()) }}" class="block px-4 py-2 text-sm hover:bg-[color:var(--surface-mute)]">
+                                <a href="{{ route('users.show', auth()->user()) }}" class="block px-4 py-2 text-sm hover:bg-[color:var(--surface-mute)]" data-shortcut-profile>
                                     <span class="vx-heading block">{{ auth()->user()->name }}</span>
-                                    <span class="vx-meta normal-case tracking-normal">View profile</span>
+                                    <span class="vx-meta normal-case tracking-normal">@{{ auth()->user()->handle }}</span>
                                 </a>
                                 <div class="border-t vx-hairline my-1"></div>
                                 <a href="{{ route('bookmarks.index') }}" class="block px-4 py-1.5 text-sm vx-muted hover:bg-[color:var(--surface-mute)] hover:vx-heading">Bookmarks</a>
@@ -131,11 +137,15 @@
         </main>
 
         <footer class="border-t vx-hairline py-6">
-            <div class="max-w-5xl mx-auto px-5 flex items-center justify-between">
+            <div class="max-w-5xl mx-auto px-5 flex items-center justify-between gap-3 flex-wrap">
                 <p class="vx-meta">
                     <span class="text-[color:var(--accent)]">/</span>
                     Powered by <a href="https://github.com/VoltexaHub/voltexahub" class="hover:text-[color:var(--accent)]">VoltexaHub</a>
                 </p>
+                <button type="button" onclick="window.dispatchEvent(new KeyboardEvent('keydown', {key:'?'}))"
+                        class="vx-meta hover:text-[color:var(--accent)]" title="Keyboard shortcuts">
+                    ? shortcuts
+                </button>
                 <p class="vx-meta">Theme · {{ $activeTheme['name'] ?? 'Default' }}</p>
             </div>
         </footer>
