@@ -123,13 +123,25 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Solo for now; contributions welcome as t
 
 On a fresh Ubuntu 22.04+ / Debian 12+ host with a domain pointing at it:
 
+**Interactive (recommended):**
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/VoltexaHub/VoltexaHub/main/scripts/install.sh -o install.sh && sudo bash install.sh
 ```
 
-(Or if you prefer the classic one-liner: `curl -fsSL .../install.sh | sudo bash </dev/tty` — the `</dev/tty` is required so prompts work through the pipe.)
+**Non-interactive (for automation / when `curl | bash` can't reach the terminal):**
 
-The installer asks for your domain, admin account, and (optional) SMTP credentials, then provisions Docker, clones the repo, writes a hardened `.env`, patches the Caddyfile, builds images, migrates, creates the admin, and runs preflight. Idempotent — re-run it any time to update.
+```bash
+VX_DOMAIN=forum.example.com \
+VX_ADMIN_NAME="Admin" \
+VX_ADMIN_HANDLE=admin \
+VX_ADMIN_EMAIL=you@example.com \
+curl -fsSL https://raw.githubusercontent.com/VoltexaHub/VoltexaHub/main/scripts/install.sh | sudo -E bash
+```
+
+Optional SMTP overrides: `VX_SMTP_HOST`, `VX_SMTP_PORT`, `VX_SMTP_USER`, `VX_SMTP_PASS`, `VX_SMTP_FROM`. Optional password override: `VX_ADMIN_PASSWORD` (otherwise auto-generated).
+
+Either way the installer provisions Docker, clones the repo, writes a hardened `.env`, patches the Caddyfile, builds images, migrates, creates the admin, and runs preflight. Idempotent — re-run any time to update.
 
 ### Manual deploy
 

@@ -27,29 +27,53 @@ die()  { printf "${c_red}✗${c_reset} %s\n" "$*" >&2; exit 1; }
 
 [ "$(id -u)" -eq 0 ] || die "This script needs root. Re-run with: sudo bash $0"
 
-# When invoked via `curl ... | sudo bash`, stdin is the pipe, so `read` would
-# consume the script (or return nothing). Re-open stdin from /dev/tty if we can.
+# 'curl | sudo bash' makes bash's stdin the pipe, so plain `read` either
+# returns EOF or consumes the script. We try to reopen stdin from /dev/tty —
+# but on some Ubuntu/sudo combos that isn't available either. Callers can
+# also pre-set every input via env vars (see variable names below) to skip
+# prompting entirely — that's the bulletproof path for curl|bash invocations.
 if [ ! -t 0 ]; then
     exec 0</dev/tty 2>/dev/null || true
 fi
-
 INTERACTIVE=0
 [ -t 0 ] && INTERACTIVE=1
 
+# ask PROMPT [DEFAULT] [ENV_VAR]
+# - If ENV_VAR is set in the environment, use that value (non-interactive override).
+# - Else, if we have a tty, prompt with DEFAULT.
+# - Else, fall back to DEFAULT.
 ask() {
-    local prompt="$1" default="${2:-}" var=""
+    local prompt="$1" default="${2:-}" env_name="${3:-}" var=""
+    if [ -n "$env_name" ]; then
+        local env_value="${!env_name:-}"
+        if [ -n "$env_value" ]; then
+            printf "%s" "$env_value"
+            return
+        fi
+    fi
     if [ $INTERACTIVE -eq 1 ]; then
         read -r -p "  ${prompt}${default:+ [$default]}: " var || var=""
     fi
     printf "%s" "${var:-$default}"
 }
 
+# ask_required PROMPT ENV_VAR
 ask_required() {
-    local prompt="$1" value=""
+    local prompt="$1" env_name="${2:-}" value=""
+    if [ -n "$env_name" ]; then
+        local env_value="${!env_name:-}"
+        if [ -n "$env_value" ]; then
+            printf "%s" "$env_value"
+            return
+        fi
+    fi
+    if [ $INTERACTIVE -eq 0 ]; then
+        die "'${prompt}' is required (set env var ${env_name} or re-run: curl ... -o install.sh && sudo bash install.sh)"
+    fi
     for _ in 1 2 3; do
-        value="$(ask "$prompt" '')"
+        value="$(ask "$prompt")"
         [ -n "$value" ] && { printf "%s" "$value"; return; }
-        [ $INTERACTIVE -eq 1 ] && printf "${c_red}  (required — try again)${c_reset}\n" >&2
+        printf "${c_red}  (required — try again)${c_reset}\n" >&2
     done
     die "'${prompt}' is required"
 }
@@ -84,29 +108,29 @@ cd "$INSTALL_DIR"
 echo ""
 say "Configuring"
 if [ $INTERACTIVE -eq 0 ]; then
-    warn "No controlling terminal available — install needs to be interactive."
-    warn "Re-run:"
-    warn "  curl -fsSL https://raw.githubusercontent.com/VoltexaHub/VoltexaHub/main/scripts/install.sh -o install.sh && sudo bash install.sh"
-    die  "Aborting."
+    note "No controlling terminal detected — reading config from env vars."
+    note "If any required var is missing, install will bail out with the name."
+    note "Set these before re-running, or use the download-then-run form:"
+    note "  curl -fsSL https://raw.githubusercontent.com/VoltexaHub/VoltexaHub/main/scripts/install.sh -o install.sh && sudo bash install.sh"
 fi
 
-DOMAIN="$(ask_required 'Domain (e.g. forum.example.com)')"
-ADMIN_NAME="$(ask 'Admin display name' 'Admin')"
-ADMIN_HANDLE="$(ask 'Admin @handle' 'admin')"
-ADMIN_EMAIL="$(ask_required 'Admin email')"
-ADMIN_PASSWORD="$(ask 'Admin password (leave blank to auto-generate)' '')"
+DOMAIN="$(ask_required 'Domain (e.g. forum.example.com)' VX_DOMAIN)"
+ADMIN_NAME="$(ask 'Admin display name' 'Admin' VX_ADMIN_NAME)"
+ADMIN_HANDLE="$(ask 'Admin @handle' 'admin' VX_ADMIN_HANDLE)"
+ADMIN_EMAIL="$(ask_required 'Admin email' VX_ADMIN_EMAIL)"
+ADMIN_PASSWORD="$(ask 'Admin password (leave blank to auto-generate)' '' VX_ADMIN_PASSWORD)"
 if [ -z "$ADMIN_PASSWORD" ]; then
     ADMIN_PASSWORD="$(random_hex 12)"
     GENERATED_PASSWORD=1
 fi
 
-SMTP_HOST="$(ask 'SMTP host (blank = log mailer, mail stays local)' '')"
+SMTP_HOST="$(ask 'SMTP host (blank = log mailer, mail stays local)' '' VX_SMTP_HOST)"
 SMTP_USER=""; SMTP_PASS=""; SMTP_PORT=""; SMTP_FROM=""
 if [ -n "$SMTP_HOST" ]; then
-    SMTP_PORT="$(ask 'SMTP port' '587')"
-    SMTP_USER="$(ask 'SMTP username' '')"
-    SMTP_PASS="$(ask 'SMTP password' '')"
-    SMTP_FROM="$(ask 'Mail From address' "forum@${DOMAIN}")"
+    SMTP_PORT="$(ask 'SMTP port' '587' VX_SMTP_PORT)"
+    SMTP_USER="$(ask 'SMTP username' '' VX_SMTP_USER)"
+    SMTP_PASS="$(ask 'SMTP password' '' VX_SMTP_PASS)"
+    SMTP_FROM="$(ask 'Mail From address' "forum@${DOMAIN}" VX_SMTP_FROM)"
 fi
 
 # ---------- .env ----------
