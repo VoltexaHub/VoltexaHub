@@ -21,6 +21,7 @@ export default defineConfig({
                 'resources/js/reactions.js',
                 'resources/js/quote.js',
                 'resources/js/shortcuts.js',
+                'resources/js/mentions.js',
             ],
             refresh: [
                 'app/Http/**',
