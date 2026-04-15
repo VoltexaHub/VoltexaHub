@@ -27,18 +27,31 @@ die()  { printf "${c_red}✗${c_reset} %s\n" "$*" >&2; exit 1; }
 
 [ "$(id -u)" -eq 0 ] || die "This script needs root. Re-run with: sudo bash $0"
 
-# Interactive TTY check — prompt only when we have one.
-INTERACTIVE=0
-if [ -t 0 ] && [ -t 1 ]; then INTERACTIVE=1; fi
+# When invoked via `curl ... | bash`, stdin is the pipe, not the terminal —
+# so we read prompts from /dev/tty directly when it's available.
+TTY_IN=""
+if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+    TTY_IN=/dev/tty
+fi
 
 ask() {
-    local prompt="$1" default="${2:-}" var
-    if [ $INTERACTIVE -eq 0 ]; then
-        printf "%s" "$default"
-        return
+    local prompt="$1" default="${2:-}" var=""
+    if [ -n "$TTY_IN" ]; then
+        # Write the prompt to the tty directly so it shows through the pipe.
+        printf "  %s%s: " "$prompt" "${default:+ [$default]}" > /dev/tty
+        IFS= read -r var < "$TTY_IN" || var=""
     fi
-    read -r -p "  ${prompt}${default:+ [$default]}: " var
     printf "%s" "${var:-$default}"
+}
+
+ask_required() {
+    local prompt="$1" value=""
+    for _ in 1 2 3; do
+        value="$(ask "$prompt" '')"
+        [ -n "$value" ] && { printf "%s" "$value"; return; }
+        [ -n "$TTY_IN" ] && printf "${c_red}  (required)${c_reset}\n" > /dev/tty
+    done
+    die "'${prompt}' is required"
 }
 
 random_hex() { openssl rand -hex "${1:-16}"; }
@@ -70,11 +83,18 @@ cd "$INSTALL_DIR"
 # ---------- Gather config ----------
 echo ""
 say "Configuring"
-DOMAIN="$(ask 'Domain (e.g. forum.example.com)' 'forum.example.com')"
+if [ -z "$TTY_IN" ]; then
+    warn "No controlling terminal detected — install needs to be interactive."
+    warn "Re-run one of these:"
+    warn "  curl -fsSL https://raw.githubusercontent.com/VoltexaHub/VoltexaHub/main/scripts/install.sh -o install.sh && sudo bash install.sh"
+    warn "  curl -fsSL https://raw.githubusercontent.com/VoltexaHub/VoltexaHub/main/scripts/install.sh | sudo bash </dev/tty"
+    die  "Aborting."
+fi
+
+DOMAIN="$(ask_required 'Domain (e.g. forum.example.com)')"
 ADMIN_NAME="$(ask 'Admin display name' 'Admin')"
 ADMIN_HANDLE="$(ask 'Admin @handle' 'admin')"
-ADMIN_EMAIL="$(ask 'Admin email' '')"
-[ -n "$ADMIN_EMAIL" ] || die "Admin email is required"
+ADMIN_EMAIL="$(ask_required 'Admin email')"
 ADMIN_PASSWORD="$(ask 'Admin password (leave blank to auto-generate)' '')"
 if [ -z "$ADMIN_PASSWORD" ]; then
     ADMIN_PASSWORD="$(random_hex 12)"

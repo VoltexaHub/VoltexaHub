@@ -124,10 +124,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Solo for now; contributions welcome as t
 On a fresh Ubuntu 22.04+ / Debian 12+ host with a domain pointing at it:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/VoltexaHub/VoltexaHub/main/scripts/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/VoltexaHub/VoltexaHub/main/scripts/install.sh -o install.sh && sudo bash install.sh
 ```
 
-The installer prompts for your domain, admin account, and (optional) SMTP credentials, then provisions Docker, clones the repo, writes a hardened `.env`, patches the Caddyfile, builds images, migrates, creates the admin, and runs preflight. Idempotent — re-run it any time to update.
+(Or if you prefer the classic one-liner: `curl -fsSL .../install.sh | sudo bash </dev/tty` — the `</dev/tty` is required so prompts work through the pipe.)
+
+The installer asks for your domain, admin account, and (optional) SMTP credentials, then provisions Docker, clones the repo, writes a hardened `.env`, patches the Caddyfile, builds images, migrates, creates the admin, and runs preflight. Idempotent — re-run it any time to update.
 
 ### Manual deploy
 
