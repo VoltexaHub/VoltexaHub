@@ -63,5 +63,7 @@ RUN chown -R app:app storage bootstrap/cache \
  && chmod -R ug+w storage bootstrap/cache
 
 USER app
+RUN php artisan package:discover --ansi
+
 EXPOSE 9000
 CMD ["php-fpm"]
