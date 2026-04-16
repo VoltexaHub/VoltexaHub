@@ -61,17 +61,14 @@ class ThreadController extends Controller
         if (isset($data['forum_id']) && $data['forum_id'] !== $thread->forum_id) {
             $oldForum = $thread->forum;
             $newForum = Forum::find($data['forum_id']);
+            $postsMoving = $thread->posts_count;
 
             $thread->update(['forum_id' => $newForum->id]);
 
-            $oldForum->update([
-                'threads_count' => $oldForum->threads()->count(),
-                'posts_count' => $oldForum->threads()->sum('posts_count'),
-            ]);
-            $newForum->update([
-                'threads_count' => $newForum->threads()->count(),
-                'posts_count' => $newForum->threads()->sum('posts_count'),
-            ]);
+            $oldForum->decrement('threads_count');
+            $oldForum->decrement('posts_count', $postsMoving);
+            $newForum->increment('threads_count');
+            $newForum->increment('posts_count', $postsMoving);
         }
 
         $thread->update(collect($data)->except('forum_id')->all());
@@ -83,12 +80,11 @@ class ThreadController extends Controller
     {
         AdminActivity::record('thread.delete', $thread, $thread->title);
         $forum = $thread->forum;
+        $postsRemoved = $thread->posts_count;
         $thread->delete();
 
-        $forum->update([
-            'threads_count' => $forum->threads()->count(),
-            'posts_count' => $forum->threads()->sum('posts_count'),
-        ]);
+        $forum->decrement('threads_count');
+        $forum->decrement('posts_count', $postsRemoved);
 
         return back()->with('flash.success', 'Thread deleted.');
     }

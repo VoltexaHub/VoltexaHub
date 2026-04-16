@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminActivity;
 use App\Models\Forum;
 use App\Models\Post;
+use App\Models\Thread;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -59,21 +61,27 @@ class PostController extends Controller
             'ids.*' => ['integer', 'exists:posts,id'],
         ]);
 
-        $posts = Post::with('thread.forum')->whereIn('id', $data['ids'])->get();
-        $threadIds = $posts->pluck('thread_id')->unique();
-        $forumIds = $posts->pluck('thread.forum_id')->unique()->filter();
+        $touched = Post::whereIn('id', $data['ids'])
+            ->get(['id', 'thread_id'])
+            ->groupBy('thread_id')
+            ->map(fn ($group) => $group->count());
 
         AdminActivity::record('post.bulk-delete', null, count($data['ids']).' posts', ['ids' => $data['ids']]);
-        Post::whereIn('id', $data['ids'])->delete();
 
-        foreach ($threadIds as $tid) {
-            $thread = $posts->firstWhere('thread_id', $tid)->thread;
-            $thread?->update(['posts_count' => $thread->posts()->count()]);
-        }
-        foreach ($forumIds as $fid) {
-            $forum = Forum::find($fid);
-            $forum?->update(['posts_count' => $forum->threads()->sum('posts_count')]);
-        }
+        DB::transaction(function () use ($data, $touched) {
+            Post::whereIn('id', $data['ids'])->delete();
+
+            foreach ($touched as $threadId => $removed) {
+                Thread::where('id', $threadId)->decrement('posts_count', $removed);
+            }
+
+            $forumIds = Thread::whereIn('id', $touched->keys())->pluck('forum_id')->unique();
+            foreach ($forumIds as $forumId) {
+                Forum::where('id', $forumId)->update([
+                    'posts_count' => Thread::where('forum_id', $forumId)->sum('posts_count'),
+                ]);
+            }
+        });
 
         $count = count($data['ids']);
         return back()->with('flash.success', "Deleted {$count} post".($count === 1 ? '' : 's').'.');

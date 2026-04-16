@@ -7,6 +7,7 @@ use App\Models\Thread;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ThreadController extends Controller
@@ -102,43 +103,48 @@ class ThreadController extends Controller
             'poll_allow_multiple' => ['nullable', 'boolean'],
         ]);
 
-        $thread = $forum->threads()->create([
-            'user_id' => $request->user()->id,
-            'title' => $data['title'],
-            'slug' => Str::slug($data['title']).'-'.Str::random(6),
-        ]);
-
-        $post = $thread->posts()->create([
-            'user_id' => $request->user()->id,
-            'body' => $data['body'],
-        ]);
-
-        $thread->update([
-            'posts_count' => 1,
-            'last_post_id' => $post->id,
-            'last_post_at' => $post->created_at,
-        ]);
-
-        $forum->update([
-            'threads_count' => $forum->threads()->count(),
-            'posts_count' => $forum->posts_count + 1,
-            'last_post_id' => $post->id,
-            'last_post_at' => $post->created_at,
-        ]);
-
         $cleanOptions = array_values(array_filter(
             array_map('trim', (array) ($data['poll_options'] ?? [])),
             fn ($s) => $s !== '',
         ));
-        if (! empty($data['poll_question']) && count($cleanOptions) >= 2) {
-            $poll = $thread->poll()->create([
-                'question' => $data['poll_question'],
-                'allow_multiple' => (bool) ($data['poll_allow_multiple'] ?? false),
+
+        $thread = DB::transaction(function () use ($forum, $data, $request, $cleanOptions) {
+            $thread = $forum->threads()->create([
+                'user_id' => $request->user()->id,
+                'title' => $data['title'],
+                'slug' => Str::slug($data['title']).'-'.Str::random(6),
             ]);
-            foreach ($cleanOptions as $i => $text) {
-                $poll->options()->create(['text' => $text, 'position' => $i]);
+
+            $post = $thread->posts()->create([
+                'user_id' => $request->user()->id,
+                'body' => $data['body'],
+            ]);
+
+            $thread->update([
+                'posts_count' => 1,
+                'last_post_id' => $post->id,
+                'last_post_at' => $post->created_at,
+            ]);
+
+            $forum->update([
+                'threads_count' => $forum->threads_count + 1,
+                'posts_count' => $forum->posts_count + 1,
+                'last_post_id' => $post->id,
+                'last_post_at' => $post->created_at,
+            ]);
+
+            if (! empty($data['poll_question']) && count($cleanOptions) >= 2) {
+                $poll = $thread->poll()->create([
+                    'question' => $data['poll_question'],
+                    'allow_multiple' => (bool) ($data['poll_allow_multiple'] ?? false),
+                ]);
+                foreach ($cleanOptions as $i => $text) {
+                    $poll->options()->create(['text' => $text, 'position' => $i]);
+                }
             }
-        }
+
+            return $thread;
+        });
 
         return redirect()->route('threads.show', [$forum->slug, $thread->slug]);
     }
