@@ -4,8 +4,8 @@
 // not declared in vite.config.js inputs[]. Catches bugs like a new
 // JS file being loaded in a view but never getting a manifest entry.
 
-import { readFileSync } from 'node:fs';
-import { execSync } from 'node:child_process';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join, relative } from 'node:path';
 
 const root = process.cwd();
 
@@ -19,12 +19,23 @@ const declared = new Set(
     [...inputBlock[1].matchAll(/['"]([^'"]+)['"]/g)].map((m) => m[1]),
 );
 
-const files = execSync(
-    'git ls-files "*.blade.php" "*.php"',
-    { cwd: root, encoding: 'utf8' },
-)
-    .split('\n')
-    .filter(Boolean);
+const SKIP_DIRS = new Set(['node_modules', 'vendor', 'storage', '.git', 'public', 'dist', 'build', 'tests']);
+const SCAN_DIRS = ['app', 'resources', 'themes', 'routes', 'plugins'];
+
+const files = [];
+function walk(dir) {
+    let entries;
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const entry of entries) {
+        if (SKIP_DIRS.has(entry.name)) continue;
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (entry.isFile() && /\.(blade\.php|php)$/.test(entry.name)) {
+            files.push(relative(root, full).replace(/\\/g, '/'));
+        }
+    }
+}
+for (const d of SCAN_DIRS) walk(join(root, d));
 
 const viteCall = /@vite\s*\(\s*(\[[^\]]*\]|'[^']*'|"[^"]*")/g;
 const missing = new Map();
