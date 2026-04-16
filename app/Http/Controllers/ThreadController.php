@@ -112,7 +112,7 @@ class ThreadController extends Controller
             $thread = $forum->threads()->create([
                 'user_id' => $request->user()->id,
                 'title' => $data['title'],
-                'slug' => Str::slug($data['title']).'-'.Str::random(6),
+                'slug' => Thread::uniqueSlug($data['title'], $forum->id),
             ]);
 
             $post = $thread->posts()->create([

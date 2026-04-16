@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Thread extends Model
 {
@@ -28,6 +29,36 @@ class Thread extends Model
     public function forum(): BelongsTo
     {
         return $this->belongsTo(Forum::class);
+    }
+
+    /**
+     * Generate a slug unique within the given forum.
+     *
+     *   "This is a test" → "this-is-a-test"
+     *   (collision)      → "this-is-a-test-2"
+     *   (…)              → "this-is-a-test-3"
+     *
+     * Falls back to an id-hash suffix on pathological contention to stay O(small).
+     */
+    public static function uniqueSlug(string $title, int $forumId): string
+    {
+        $base = Str::slug($title);
+        if ($base === '') $base = 'thread';
+
+        $existing = static::withTrashed()
+            ->where('forum_id', $forumId)
+            ->where(fn ($q) => $q->where('slug', $base)->orWhere('slug', 'like', $base.'-%'))
+            ->pluck('slug')
+            ->all();
+
+        if (! in_array($base, $existing, true)) return $base;
+
+        for ($n = 2; $n <= 50; $n++) {
+            $candidate = $base.'-'.$n;
+            if (! in_array($candidate, $existing, true)) return $candidate;
+        }
+
+        return $base.'-'.Str::lower(Str::random(6));
     }
 
     public function author(): BelongsTo

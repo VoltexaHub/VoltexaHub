@@ -3,14 +3,41 @@
 @section('title', $thread->title.' · '.config('app.name'))
 
 @push('head')
-    @php $threadDesc = \Illuminate\Support\Str::limit(strip_tags($posts->first()?->body ?? ''), 200); @endphp
+    @php
+        $threadDesc = \Illuminate\Support\Str::limit(strip_tags($posts->first()?->body ?? ''), 200);
+        $threadUrl = route('threads.show', [$forum->slug, $thread->slug]);
+        $ogImage = route('og.thread', $thread);
+        $jsonLd = [
+            '@context' => 'https://schema.org',
+            '@type' => 'DiscussionForumPosting',
+            'headline' => $thread->title,
+            'url' => $threadUrl,
+            'datePublished' => $thread->created_at?->toIso8601String(),
+            'dateModified' => ($thread->last_post_at ?? $thread->updated_at)?->toIso8601String(),
+            'author' => ['@type' => 'Person', 'name' => $thread->author?->name ?? 'Unknown'],
+            'interactionStatistic' => [
+                ['@type' => 'InteractionCounter', 'interactionType' => 'https://schema.org/ReplyAction', 'userInteractionCount' => max(0, (int) $thread->posts_count - 1)],
+                ['@type' => 'InteractionCounter', 'interactionType' => 'https://schema.org/ViewAction', 'userInteractionCount' => (int) $thread->views_count],
+            ],
+            'isPartOf' => ['@type' => 'DiscussionForumPosting', 'name' => $forum->name, 'url' => route('forums.show', $forum->slug)],
+            'image' => $ogImage,
+        ];
+        if ($threadDesc !== '') $jsonLd['articleBody'] = $threadDesc;
+    @endphp
     <meta name="description" content="{{ $threadDesc ?: $thread->title }}">
     <meta property="og:title" content="{{ $thread->title }}" />
     <meta property="og:description" content="{{ $threadDesc }}" />
-    <meta property="og:image" content="{{ route('og.thread', $thread) }}" />
+    <meta property="og:url" content="{{ $threadUrl }}" />
+    <meta property="og:site_name" content="{{ config('app.name') }}" />
+    <meta property="og:image" content="{{ $ogImage }}" />
     <meta property="og:type" content="article" />
+    <meta property="article:published_time" content="{{ $thread->created_at?->toIso8601String() }}" />
+    @if($thread->author)<meta property="article:author" content="{{ $thread->author->name }}" />@endif
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="{{ route('og.thread', $thread) }}" />
+    <meta name="twitter:title" content="{{ $thread->title }}" />
+    <meta name="twitter:description" content="{{ $threadDesc }}" />
+    <meta name="twitter:image" content="{{ $ogImage }}" />
+    <script type="application/ld+json">{!! json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endpush
 
 @push('scripts')

@@ -2,6 +2,19 @@
 
 @section('title', 'Forums · '.config('app.name'))
 
+@push('head')
+    @php $homeDesc = config('app.name').' — discussions, announcements, and community threads.'; @endphp
+    <meta name="description" content="{{ $homeDesc }}">
+    <meta property="og:title" content="{{ config('app.name') }}" />
+    <meta property="og:description" content="{{ $homeDesc }}" />
+    <meta property="og:url" content="{{ route('home') }}" />
+    <meta property="og:site_name" content="{{ config('app.name') }}" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="{{ config('app.name') }}" />
+    <meta name="twitter:description" content="{{ $homeDesc }}" />
+@endpush
+
 @section('content')
     <header class="mb-10 flex items-end justify-between gap-4">
         <div>

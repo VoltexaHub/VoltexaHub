@@ -2,6 +2,23 @@
 
 @section('title', $forum->name.' · '.config('app.name'))
 
+@push('head')
+    @php
+        $forumDesc = $forum->description
+            ?: "Latest discussions in {$forum->name} on ".config('app.name').'.';
+        $forumUrl = route('forums.show', $forum->slug);
+    @endphp
+    <meta name="description" content="{{ $forumDesc }}">
+    <meta property="og:title" content="{{ $forum->name }}" />
+    <meta property="og:description" content="{{ $forumDesc }}" />
+    <meta property="og:url" content="{{ $forumUrl }}" />
+    <meta property="og:site_name" content="{{ config('app.name') }}" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="{{ $forum->name }}" />
+    <meta name="twitter:description" content="{{ $forumDesc }}" />
+@endpush
+
 @section('content')
     @include('theme::partials.breadcrumbs', ['items' => [
         ['label' => 'Forums', 'url' => route('home')],

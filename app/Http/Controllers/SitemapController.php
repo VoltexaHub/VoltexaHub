@@ -14,6 +14,14 @@ class SitemapController extends Controller
 
         $urls[] = ['loc' => route('home'), 'priority' => '1.0', 'changefreq' => 'hourly'];
 
+        foreach (['privacy', 'terms'] as $page) {
+            $urls[] = [
+                'loc' => route('pages.show', $page),
+                'priority' => '0.3',
+                'changefreq' => 'monthly',
+            ];
+        }
+
         foreach (Forum::orderBy('id')->get() as $forum) {
             $urls[] = [
                 'loc' => route('forums.show', $forum->slug),
