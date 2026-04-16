@@ -31,8 +31,11 @@
     <div class="min-h-screen flex flex-col">
         <header class="sticky top-0 z-20 border-b vx-hairline bg-[color:var(--bg)]/85 backdrop-blur supports-[backdrop-filter]:bg-[color:var(--bg)]/70">
             <div class="max-w-5xl mx-auto px-5 h-16 flex items-center gap-5">
-                <a href="{{ route('home') }}" class="vx-display font-semibold text-[1.35rem] leading-none tracking-tight shrink-0">
-                    {{ $activeTheme['name'] ?? 'VoltexaHub' }}<span class="text-[color:var(--accent)]">.</span>
+                <a href="{{ route('home') }}" class="flex items-center gap-2.5 shrink-0">
+                    @if($siteLogo ?? null)
+                        <img src="{{ $siteLogo }}" alt="{{ $siteName ?? config('app.name') }}" class="h-8 w-auto" />
+                    @endif
+                    <span class="vx-display font-semibold text-[1.35rem] leading-none tracking-tight">{{ $siteName ?? config('app.name') }}<span class="text-[color:var(--accent)]">.</span></span>
                 </a>
                 <span class="hidden md:inline-block w-px h-6 bg-[color:var(--border)]"></span>
                 <form method="GET" action="{{ route('search') }}" class="hidden md:block flex-1 max-w-md">

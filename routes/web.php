@@ -117,7 +117,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('reports/{report}/resolve-delete', [Admin\ReportController::class, 'resolveDelete'])->name('reports.resolve-delete');
 
     Route::get('settings', [Admin\SettingController::class, 'index'])->name('settings.index');
-    Route::put('settings', [Admin\SettingController::class, 'update'])->name('settings.update');
+    Route::match(['put', 'post'], 'settings', [Admin\SettingController::class, 'update'])->name('settings.update');
     Route::delete('settings/oauth-secret', [Admin\SettingController::class, 'clearSecret'])->name('settings.oauth.clear-secret');
 });
 

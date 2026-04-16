@@ -15,6 +15,10 @@ class SettingController extends Controller
     {
         return Inertia::render('Admin/Settings/Index', [
             'settings' => [
+                'site' => [
+                    'name' => Setting::get('site.name', ''),
+                    'logo_url' => Setting::get('site.logo_url', ''),
+                ],
                 'oauth' => [
                     'github' => [
                         'client_id' => Setting::get('oauth.github.client_id', ''),
@@ -50,6 +54,9 @@ class SettingController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $data = $request->validate([
+            'site_name' => ['nullable', 'string', 'max:100'],
+            'site_logo' => ['nullable', 'image', 'max:512'],
+            'remove_logo' => ['nullable', 'boolean'],
             'github_client_id' => ['nullable', 'string', 'max:200'],
             'github_client_secret' => ['nullable', 'string', 'max:500'],
             'google_client_id' => ['nullable', 'string', 'max:200'],
@@ -61,6 +68,20 @@ class SettingController extends Controller
             'terms_title' => ['nullable', 'string', 'max:120'],
             'terms_body' => ['nullable', 'string', 'max:20000'],
         ]);
+
+        Setting::put('site.name', $data['site_name'] ?: null);
+
+        if (! empty($data['remove_logo'])) {
+            $old = Setting::get('site.logo_url');
+            if ($old) {
+                $disk = \Illuminate\Support\Facades\Storage::disk('public');
+                $disk->delete(str_replace('/storage/', '', parse_url($old, PHP_URL_PATH)));
+            }
+            Setting::put('site.logo_url', null);
+        } elseif ($request->hasFile('site_logo')) {
+            $path = $request->file('site_logo')->store('branding', 'public');
+            Setting::put('site.logo_url', '/storage/'.$path);
+        }
 
         Setting::put('oauth.github.client_id', $data['github_client_id'] ?? null);
         if (! empty($data['github_client_secret'])) {

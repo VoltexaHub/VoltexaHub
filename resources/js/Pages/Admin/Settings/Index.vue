@@ -1,10 +1,14 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps({ settings: Object, callbackUrls: Object });
 
 const form = useForm({
+    site_name: props.settings.site?.name || '',
+    site_logo: null,
+    remove_logo: false,
     github_client_id: props.settings.oauth.github.client_id || '',
     github_client_secret: '',
     google_client_id: props.settings.oauth.google.client_id || '',
@@ -17,10 +21,33 @@ const form = useForm({
     terms_body: props.settings.pages?.terms?.body || '',
 });
 
+const logoPreview = ref(props.settings.site?.logo_url || '');
+
+const onLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        form.site_logo = file;
+        form.remove_logo = false;
+        logoPreview.value = URL.createObjectURL(file);
+    }
+};
+const removeLogo = () => {
+    form.site_logo = null;
+    form.remove_logo = true;
+    logoPreview.value = '';
+};
+
 const save = () => {
-    form.put(route('admin.settings.update'), {
+    form.post(route('admin.settings.update'), {
         preserveScroll: true,
-        onSuccess: () => { form.github_client_secret = ''; form.google_client_secret = ''; },
+        forceFormData: true,
+        onSuccess: () => {
+            form.github_client_secret = '';
+            form.google_client_secret = '';
+            form.site_logo = null;
+            form.remove_logo = false;
+            logoPreview.value = props.settings.site?.logo_url || '';
+        },
     });
 };
 
@@ -39,7 +66,38 @@ const clearSecret = (provider) => {
             <h1 class="font-serif text-4xl font-semibold tracking-tight" style="font-family:'Fraunces',serif;color:var(--text)">Settings</h1>
         </header>
 
-        <form @submit.prevent="save" class="space-y-12 max-w-3xl">
+        <form @submit.prevent="save" class="space-y-12 max-w-3xl" enctype="multipart/form-data">
+            <section>
+                <header class="mb-5">
+                    <h2 class="font-serif text-2xl font-semibold tracking-tight" style="font-family:'Fraunces',serif;color:var(--text)">Branding</h2>
+                    <p class="text-sm mt-1" style="color:var(--text-muted)">
+                        Site name appears in the header, page titles, and meta tags. Logo shows next to the name (recommend ≤ 128px tall, transparent PNG/SVG).
+                    </p>
+                </header>
+
+                <div class="pt-5 border-t space-y-4" :style="{ borderColor: 'var(--border)' }">
+                    <div>
+                        <label class="vx-meta mb-2 block">Site name</label>
+                        <input v-model="form.site_name" type="text" maxlength="100" class="vx-input text-sm"
+                               placeholder="e.g. VoltexaHub" />
+                        <p v-if="form.errors.site_name" class="text-sm text-red-600 mt-1">{{ form.errors.site_name }}</p>
+                    </div>
+                    <div>
+                        <label class="vx-meta mb-2 block">Logo</label>
+                        <div class="flex items-center gap-4">
+                            <img v-if="logoPreview" :src="logoPreview" alt="Logo preview" class="h-10 w-auto rounded" />
+                            <span v-else class="text-sm" style="color:var(--text-muted)">No logo set</span>
+                            <label class="vx-btn-secondary cursor-pointer" style="padding:0.35rem 0.75rem;font-size:0.8rem">
+                                {{ logoPreview ? 'Change' : 'Upload' }}
+                                <input type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp,image/gif" class="sr-only" @change="onLogoChange" />
+                            </label>
+                            <button v-if="logoPreview" type="button" @click="removeLogo" class="text-xs text-red-600 hover:underline">Remove</button>
+                        </div>
+                        <p v-if="form.errors.site_logo" class="text-sm text-red-600 mt-1">{{ form.errors.site_logo }}</p>
+                    </div>
+                </div>
+            </section>
+
             <section>
                 <header class="mb-5">
                     <h2 class="font-serif text-2xl font-semibold tracking-tight" style="font-family:'Fraunces',serif;color:var(--text)">OAuth providers</h2>

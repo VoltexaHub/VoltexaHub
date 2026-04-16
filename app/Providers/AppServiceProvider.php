@@ -54,6 +54,9 @@ class AppServiceProvider extends ServiceProvider
                 'tone' => \App\Models\Setting::get('announcement.tone', 'info'),
                 'version' => (int) \App\Models\Setting::get('announcement.version', 1),
             ] : null);
+
+            $view->with('siteName', \App\Models\Setting::get('site.name') ?: config('app.name'));
+            $view->with('siteLogo', \App\Models\Setting::get('site.logo_url'));
         });
     }
 
