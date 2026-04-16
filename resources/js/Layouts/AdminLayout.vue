@@ -11,6 +11,7 @@ const nav = [
     { label: 'Categories', route: 'admin.categories.index' },
     { label: 'Forums',     route: 'admin.forums.index' },
     { label: 'Threads',    route: 'admin.threads.index' },
+    { label: 'Polls',      route: 'admin.polls.index' },
     { label: 'Reports',    route: 'admin.reports.index', badgeKey: 'pending_reports' },
     { label: 'Users',      route: 'admin.users.index' },
     { label: 'Plugins',    route: 'admin.plugins.index' },

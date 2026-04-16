@@ -100,6 +100,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('categories', Admin\CategoryController::class)->except(['show']);
     Route::resource('forums', Admin\ForumController::class)->except(['show']);
     Route::resource('threads', Admin\ThreadController::class)->only(['index', 'edit', 'update', 'destroy']);
+    Route::resource('polls', Admin\PollController::class)->only(['index', 'edit', 'update', 'destroy']);
     Route::resource('users', Admin\UserController::class)->only(['index', 'update', 'destroy']);
 
     Route::get('plugins', [Admin\PluginController::class, 'index'])->name('plugins.index');
