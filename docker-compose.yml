@@ -32,9 +32,9 @@ services:
     image: postgres:16-alpine
     container_name: voltexa-postgres
     environment:
-      POSTGRES_DB: voltexahub
-      POSTGRES_USER: voltexa
-      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: ${DB_DATABASE:-voltexahub}
+      POSTGRES_USER: ${DB_USERNAME:-voltexa}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
       - "5432:5432"
     volumes:

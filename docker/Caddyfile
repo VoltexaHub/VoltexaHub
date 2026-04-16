@@ -1,7 +1,8 @@
-# Replace forum.example.com with your real domain. Caddy fetches + renews
-# a Let's Encrypt cert for it automatically on first request.
+# Domain comes from the APP_DOMAIN env var (set it in .env on the host).
+# Caddy fetches + renews a Let's Encrypt cert for it automatically on
+# first request.
 
-forum.example.com {
+{$APP_DOMAIN:forum.example.com} {
     encode zstd gzip
 
     # Reverb WebSocket upgrade — the Laravel Reverb client hits /app/... over ws/wss.
