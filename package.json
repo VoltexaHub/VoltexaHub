@@ -3,8 +3,10 @@
     "private": true,
     "type": "module",
     "scripts": {
+        "prebuild": "node scripts/check-vite-inputs.mjs",
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "check:vite-inputs": "node scripts/check-vite-inputs.mjs"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^2.0.0",
