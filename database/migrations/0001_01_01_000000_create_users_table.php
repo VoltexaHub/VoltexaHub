@@ -18,6 +18,20 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+            $table->string('username')->unique();
+            $table->foreignId('group_id')->nullable()->constrained('groups')->nullOnDelete();
+            $table->string('avatar')->nullable();
+            $table->text('bio')->nullable();
+            $table->text('signature')->nullable();
+            $table->boolean('is_trusted')->default(false);
+            $table->unsignedBigInteger('credits')->default(0);
+            $table->unsignedInteger('post_count')->default(0);
+            $table->unsignedInteger('thread_count')->default(0);
+            $table->timestamp('last_seen_at')->nullable();
+            $table->string('banned_reason')->nullable();
+            $table->timestamp('banned_at')->nullable();
+            $table->string('referral_code', 12)->unique()->nullable();
+            $table->foreignId('referred_by_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 
