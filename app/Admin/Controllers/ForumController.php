@@ -17,11 +17,6 @@ class ForumController
         ]);
     }
 
-    public function create()
-    {
-        return redirect()->route('admin.forums.index');
-    }
-
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -32,11 +27,6 @@ class ForumController
         ]);
         Forum::create($data + ['display_order' => (Forum::max('display_order') ?? 0) + 1]);
         return back()->with('success', 'Forum created.');
-    }
-
-    public function edit($id)
-    {
-        return redirect()->route('admin.forums.index');
     }
 
     public function update(Request $request, Forum $forum)

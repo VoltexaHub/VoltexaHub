@@ -31,5 +31,7 @@ class CategoryAdminTest extends TestCase
         $this->actingAs($admin)->post('/admin/categories/reorder', ['order' => $order])
              ->assertOk();
         $this->assertEquals(0, Category::find($order[0])->display_order);
+        $this->assertEquals(1, Category::find($order[1])->display_order);
+        $this->assertEquals(2, Category::find($order[2])->display_order);
     }
 }

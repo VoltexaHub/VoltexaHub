@@ -47,7 +47,6 @@ function startEdit(cat) {
       <div v-for="(cat, i) in categories" :key="cat.id"
            class="flex items-center gap-4 px-5 py-3"
            :style="i > 0 ? 'border-top:1px solid var(--border)' : ''">
-        <span class="text-xs cursor-move select-none" style="color:var(--text-faint)">⠿</span>
         <div class="flex-1">
           <template v-if="editingId === cat.id">
             <div class="flex gap-2 flex-wrap">

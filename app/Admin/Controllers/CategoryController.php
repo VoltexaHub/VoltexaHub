@@ -15,11 +15,6 @@ class CategoryController
         ]);
     }
 
-    public function create()
-    {
-        return redirect()->route('admin.categories.index');
-    }
-
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -28,11 +23,6 @@ class CategoryController
         ]);
         Category::create($data + ['display_order' => (Category::max('display_order') ?? 0) + 1]);
         return back()->with('success', 'Category created.');
-    }
-
-    public function edit($id)
-    {
-        return redirect()->route('admin.categories.index');
     }
 
     public function update(Request $request, Category $category)
