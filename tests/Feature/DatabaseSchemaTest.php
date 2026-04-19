@@ -20,5 +20,6 @@ class DatabaseSchemaTest extends TestCase
         $this->assertTrue(Schema::hasTable('reports'), 'Table reports does not exist');
         $this->assertTrue(Schema::hasTable('mod_logs'), 'Table mod_logs does not exist');
         $this->assertTrue(Schema::hasTable('settings'), 'Table settings does not exist');
+        $this->assertTrue(Schema::hasTable('post_reactions'), 'Table post_reactions does not exist');
     }
 }
